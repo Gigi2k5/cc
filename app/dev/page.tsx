@@ -26,10 +26,19 @@ const CONTRAST_PAIRS = [
   { label: "gris sur surface", fg: "#8F8F8F", bg: "#101010" },
   { label: "gris sur surface-2", fg: "#8F8F8F", bg: "#161616" },
   { label: "rouge sur encre", fg: "#FA1500", bg: "#080808" },
-  { label: "gris-faible sur encre", fg: "#4A4A4A", bg: "#080808" },
+  { label: "gris-faible sur encre", fg: "#7A7A7A", bg: "#080808" },
   { label: "blanc sur rouge", fg: "#FFFFFF", bg: "#FA1500" },
   { label: "blanc sur orange", fg: "#FFFFFF", bg: "#EA441A" },
 ] as const;
+
+/**
+ * Exception AA assumée et unique du site : le blanc sur le dégradé accent
+ * (4,06:1 rouge / 3,93:1 orange) ne franchit que le seuil « grand texte ».
+ * C'est le rendu validé, et blanc-sur-rouge de marque est la norme du métier.
+ * Arbitré avec Ghilth. Tout le reste du site reste au-dessus de 4,5:1.
+ */
+const AA_EXCEPTION =
+  "Blanc sur le dégradé accent : seule exception AA assumée du site (rendu validé). Tout le reste franchit 4,5:1.";
 
 function Block({
   title,
@@ -281,6 +290,9 @@ export default function DevPage() {
                 </tbody>
               </table>
             </div>
+            <p className="mt-6 max-w-[70ch] text-sm text-craie-2">
+              <span className="text-rouge">⚠</span> {AA_EXCEPTION}
+            </p>
           </Block>
         </div>
       </Section>

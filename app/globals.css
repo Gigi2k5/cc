@@ -23,7 +23,11 @@
   --color-craie: #f5f3ef;
   --color-craie-2: #b5b3af;
   --color-gris: #8f8f8f;
-  --color-gris-faible: #4a4a4a;
+  /* La maquette donnait #4A4A4A, mais 2,26:1 sur l'encre échoue à tous les
+     seuils WCAG et ce token porte de vrais textes ([ C//C — BÉNIN ], légende
+     du hero). Remonté au minimum qui franchit AA (4,67:1) tout en restant le
+     niveau le plus discret de la hiérarchie. Arbitré avec Ghilth. */
+  --color-gris-faible: #7a7a7a;
 
   /* --- Polices : un rôle par police, jamais deux serifs par bloc (§4) ----- */
   --font-display: var(--font-instrument-serif), "Times New Roman", serif;
