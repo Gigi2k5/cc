@@ -69,14 +69,15 @@
   --section-y: clamp(80px, 12vw, 160px);
   --gutter: 20px;
 
-  /* Hauteur de la nav sticky — décale les ancres au scroll. */
-  --nav-h: 72px;
+  /* Hauteur de la nav sticky — décale les ancres au scroll et sert
+     d'offset au scroll-spy, qui lit ce token à l'exécution. */
+  --nav-h: 64px;
 }
 
 @media (width >= 64rem) {
   :root {
     --gutter: 40px;
-    --nav-h: 80px;
+    --nav-h: 76px;
   }
 }
 

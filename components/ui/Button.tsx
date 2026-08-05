@@ -14,8 +14,8 @@ type ButtonProps = {
   href?: string;
   /** Force the new-tab behaviour instead of deriving it from the href. */
   external?: boolean;
-  /** Button-only props. */
-  onClick?: MouseEventHandler<HTMLButtonElement>;
+  /** Works on both branches — the mobile panel closes itself on tap. */
+  onClick?: MouseEventHandler<HTMLElement>;
   type?: "button" | "submit";
   disabled?: boolean;
   ariaLabel?: string;
@@ -67,6 +67,12 @@ const SIZES: Record<Size, Record<Variant, string>> = {
 /**
  * Design system §10 — primaire (dégradé + halo) et ghost (bordure → rouge).
  * Rend un <a> si `href` est fourni, un <button> sinon.
+ *
+ * ⚠️ `className` ne peut pas surcharger le `display` : `inline-flex` vient de
+ * BASE et, entre deux utilitaires de la même famille, Tailwind tranche par
+ * l'ordre dans la feuille générée, pas par l'ordre dans className. Pour
+ * masquer un bouton selon le viewport, encadre-le d'un conteneur
+ * (`<div className="hidden lg:block">`).
  */
 export function Button({
   children,
@@ -91,6 +97,7 @@ export function Button({
       <a
         href={href}
         className={classes}
+        onClick={onClick}
         aria-label={ariaLabel}
         {...(opensNewTab
           ? { target: "_blank", rel: "noopener noreferrer" }

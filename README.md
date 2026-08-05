@@ -56,7 +56,7 @@ la scène WebGL et les couches canvas.
 
 - [x] Phase 0 — setup, tokens, polices, `Section` / `Container`, grain
 - [x] Phase 1 — primitives du design system (démo : `/dev`)
-- [ ] Phase 2 — nav + footer
+- [x] Phase 2 — nav sticky + scroll-spy + burger, footer
 - [ ] Phase 3 — hero 3D
 - [ ] Phase 4 — sections contenu
 - [ ] Phase 5 — communauté + réseau de fond global
