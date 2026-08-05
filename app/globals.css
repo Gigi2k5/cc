@@ -140,6 +140,11 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+      /* Sans ça, une révélation en cascade garderait son délai : l'élément
+         resterait sur son état initial (invisible) pendant tout le délai avant
+         de surgir. Le hero resterait vide ~1 s. */
+      animation-delay: 0s !important;
+      transition-delay: 0s !important;
     }
 
     /* Le caret doit rester statique mais VISIBLE : la règle ci-dessus le
@@ -190,7 +195,73 @@
   }
 }
 
+/* Révélation au chargement du hero : chaque ligne monte derrière son masque. */
+/* On anime `transform`, pas la propriété `translate` : cette dernière est celle
+   que Tailwind v4 utilise pour ses utilitaires `translate-*`, et l'état final
+   du keyframe les écraserait (une légende `-translate-x-1/2` cesserait d'être
+   centrée). Avec `transform`, les deux se composent. */
+@keyframes hero-rise {
+  from {
+    transform: translateY(110%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Type-on du motif terminal. La largeur est exprimée en `ch` : en monospace
+   c'est exactement l'avance d'un caractère, donc la cible est juste au pixel,
+   et le caret placé juste après suit naturellement la frappe. */
+@keyframes terminal-type {
+  from {
+    width: 0;
+  }
+  to {
+    width: calc(var(--type-chars) * 1ch);
+  }
+}
+
 @layer components {
+  /* Ligne de titre masquée : l'enfant monte, le parent coupe. */
+  .hero-line {
+    display: block;
+    overflow: hidden;
+    /* Marge de respiration pour les jambages et les italiques. */
+    padding-block: 0.06em;
+    margin-block: -0.06em;
+  }
+
+  .hero-line > span {
+    display: block;
+    animation: hero-rise 1s var(--ease-reveal) both;
+    animation-delay: var(--rise-delay, 0ms);
+  }
+
+  .hero-fade {
+    animation: hero-fade 0.9s var(--ease-reveal) both;
+    animation-delay: var(--rise-delay, 0ms);
+  }
+
+  .terminal-type {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: bottom;
+    animation: terminal-type 1.4s linear both;
+    animation-delay: var(--rise-delay, 0ms);
+  }
+
   /* Caret rouge du motif terminal (§10). */
   .terminal-caret {
     display: inline-block;

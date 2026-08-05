@@ -1,8 +1,10 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
 type EyebrowProps = {
+  /** Porte les variables CSS de cascade (`--rise-delay`). */
+  style?: CSSProperties;
   /** Written naturally — the component uppercases it. */
   children: ReactNode;
   /** `md` for section eyebrows, `sm` inside cards. */
@@ -25,10 +27,12 @@ export function Eyebrow({
   lead,
   className,
   id,
+  style,
 }: EyebrowProps) {
   return (
     <p
       id={id}
+      style={style}
       className={cn(
         "flex items-center font-mono text-gris uppercase transition-colors duration-[var(--duration-micro)] ease-micro",
         size === "md"

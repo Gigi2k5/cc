@@ -22,6 +22,8 @@ npm run build      # build de production
 npm run start      # sert le build de production
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
+npm run check:shell # vérifs nav/footer en pilotant Chrome (build requis)
+npm run check:hero  # vérifs de la scène 3D du hero
 ```
 
 ## Structure
@@ -57,7 +59,7 @@ la scène WebGL et les couches canvas.
 - [x] Phase 0 — setup, tokens, polices, `Section` / `Container`, grain
 - [x] Phase 1 — primitives du design system (démo : `/dev`)
 - [x] Phase 2 — nav sticky + scroll-spy + burger, footer
-- [ ] Phase 3 — hero 3D
+- [x] Phase 3 — hero 3D (WebGL, repli CSS, reduced-motion figé)
 - [ ] Phase 4 — sections contenu
 - [ ] Phase 5 — communauté + réseau de fond global
 - [ ] Phase 6 — FAQ + contact
