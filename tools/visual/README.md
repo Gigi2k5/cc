@@ -16,7 +16,11 @@ bash tools/visual/run.sh checks/hero.mjs    # scène 3D du hero
 bash tools/visual/run.sh checks/content.mjs # fidélité de la copie, révélations, survols
 bash tools/visual/run.sh checks/community.mjs # section Communauté + couche réseau
 bash tools/visual/run.sh checks/faq-contact.mjs # accordéon FAQ au clavier + contact + liens
+bash tools/visual/run.sh checks/motion.mjs  # magnétisme, spotlight, filets de section
 bash tools/visual/run.sh checks/shots.mjs   # captures des sections (sans vérification)
+
+# Chemin tactile — ce qui doit être DÉSACTIVÉ au doigt.
+POINTER=coarse bash tools/visual/run.sh checks/touch.mjs
 ```
 
 Sortie : résumé en console (code de sortie non nul si un échec) et captures PNG
@@ -31,6 +35,9 @@ logiciel, seul moyen d'obtenir WebGL2 sans écran. Conséquences :
   « ≥ 50 fps desktop » doit être vérifié sur une vraie machine. À la place, le
   harnais compte les **appels de dessin par frame**, qui est le bon indicateur
   de coût GPU et qui, lui, est valide.
+- Toute transition CSS met bien plus longtemps que sa durée nominale à se
+  stabiliser : une transition de 150 ms était encore en vol après 200 ms et ne
+  s'est fixée qu'après ~1,2 s. Les mesures d'états animés attendent donc 2,5 s.
 - Un rendu prenant ~370 ms, les frames « en vol » mettent longtemps à
   s'écouler. Les mesures d'arrêt de boucle se font donc en **deux fenêtres** :
   la première absorbe le drainage, la seconde doit être strictement vide.
@@ -52,6 +59,10 @@ logiciel, seul moyen d'obtenir WebGL2 sans écran. Conséquences :
   tests correspondants passent à côté du sujet en croyant tester quelque chose.
   `Emulation.setEmulatedMedia` ne gère pas ces features — `run.sh` les force via
   `--blink-settings=primaryHoverType=2,…`.
+- Corollaire longtemps passé inaperçu : ce forçage vaut pour **tous** les
+  viewports, donc le viewport « mobile » du harnais rapporte quand même un
+  pointeur fin. Tout ce qui doit être désactivé au doigt n'était donc jamais
+  exercé. D'où `POINTER=coarse`, qui simule un écran tactile.
 - `Input.dispatchKeyEvent` en `rawKeyDown` ne fait pas cliquer un `<button>` :
   il faut `keyDown` avec `text` (`\r` pour Entrée, espace pour Espace). Entrée
   déclenche le clic au keydown, Espace au keyup.

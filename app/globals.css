@@ -276,6 +276,46 @@
     }
   }
 
+  /* Halo qui suit le curseur dans une carte (§9). Le rayon vient de
+     lib/motion.ts (SPOTLIGHT_RADIUS), tenu aligné par le harnais. */
+  .card-spotlight {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--duration-standard) var(--ease-standard);
+    background: radial-gradient(
+      340px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      rgb(250 21 0 / 0.1),
+      transparent 68%
+    );
+  }
+
+  .group:hover > .card-spotlight {
+    opacity: 1;
+  }
+
+  /* Transition de section : un filet qui se trace de gauche à droite, avec un
+     segment en dégradé accent. Langage machine : une mesure, pas un ornement. */
+  .section-rule {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      var(--color-rouge) 0%,
+      var(--color-orange) 8%,
+      var(--color-ligne) 26%,
+      var(--color-ligne-faible) 100%
+    );
+    transform-origin: left center;
+    transform: scaleX(0);
+    transition: transform 900ms var(--ease-reveal);
+  }
+
+  .section-rule[data-revealed="true"] {
+    transform: scaleX(1);
+  }
+
   /* Ligne de titre masquée : l'enfant monte, le parent coupe. */
   .hero-line {
     display: block;

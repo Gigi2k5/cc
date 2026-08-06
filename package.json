@@ -13,7 +13,9 @@
     "check:content": "bash tools/visual/run.sh checks/content.mjs",
     "shots": "bash tools/visual/run.sh checks/shots.mjs",
     "check:community": "bash tools/visual/run.sh checks/community.mjs",
-    "check:faq": "bash tools/visual/run.sh checks/faq-contact.mjs"
+    "check:faq": "bash tools/visual/run.sh checks/faq-contact.mjs",
+    "check:motion": "bash tools/visual/run.sh checks/motion.mjs",
+    "check:touch": "POINTER=coarse bash tools/visual/run.sh checks/touch.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

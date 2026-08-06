@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import { Magnetic } from "@/components/ui/Magnetic";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { BRAND, CTA, NAV_IDS, NAV_LINKS, WHATSAPP } from "@/lib/content";
 import { useScrollSpy } from "@/lib/hooks/useScrollSpy";
@@ -138,7 +139,9 @@ export function Nav() {
                 utilitaires `display`, c'est l'ordre dans la feuille générée
                 qui tranche, pas l'ordre dans className. */}
             <div className="hidden lg:block">
-              <Button href={WHATSAPP.primary.href}>{CTA.whatsapp}</Button>
+              <Magnetic>
+                <Button href={WHATSAPP.primary.href}>{CTA.whatsapp}</Button>
+              </Magnetic>
             </div>
 
             <button

@@ -52,10 +52,22 @@ NEXT_PID=$!
 # `hover:` dans `@media (hover: hover)` — sans ça, aucun état de survol n'existe
 # et les tests correspondants passent à côté du sujet en croyant tester.
 # (Emulation.setEmulatedMedia ne gère pas ces deux features.)
-# availableHoverTypes/primaryHoverType : 2 = hover · pointerTypes : 4 = fine.
+# availableHoverTypes/primaryHoverType : 1 = none, 2 = hover
+# available/primaryPointerType        : 1 = none, 2 = coarse, 4 = fine
+#
+# POINTER=coarse simule un écran tactile : indispensable pour vérifier ce qui
+# doit être DÉSACTIVÉ au doigt (magnétisme, halo curseur). Sans cette option,
+# le viewport mobile du harnais rapporte quand même un pointeur fin et ces
+# chemins ne sont jamais exercés.
+if [ "${POINTER:-fine}" = "coarse" ]; then
+  BLINK="primaryHoverType=1,availableHoverTypes=1,primaryPointerType=2,availablePointerTypes=2"
+else
+  BLINK="primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4"
+fi
+
 google-chrome --headless --no-sandbox --disable-gpu \
   --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader \
-  --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 \
+  --blink-settings="$BLINK" \
   --remote-debugging-port="$CDP_PORT" --remote-allow-origins='*' \
   --user-data-dir="$(mktemp -d)" about:blank > "$OUT/chrome.log" 2>&1 &
 CHROME_PID=$!

@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
+import { Spotlight } from "./Spotlight";
+
 type CardProps = {
   children: ReactNode;
   className?: string;
@@ -22,7 +24,7 @@ export function Card({ children, className, interactive = true }: CardProps) {
   return (
     <div
       className={cn(
-        "group flex flex-col gap-3.5 rounded-lg border border-ligne bg-surface p-8",
+        "group relative flex flex-col gap-3.5 rounded-lg border border-ligne bg-surface p-8",
         interactive &&
           cn(
             // `translate`, pas `transform` : voir la note dans Button.tsx.
@@ -33,6 +35,8 @@ export function Card({ children, className, interactive = true }: CardProps) {
         className,
       )}
     >
+      {/* Halo curseur — seulement sur les cartes interactives. */}
+      {interactive ? <Spotlight /> : null}
       {children}
     </div>
   );

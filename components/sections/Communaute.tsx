@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { GradientText } from "@/components/ui/GradientText";
+import { Magnetic } from "@/components/ui/Magnetic";
 import { Reveal } from "@/components/ui/Reveal";
 import { COMMUNAUTE, CTA, WHATSAPP } from "@/lib/content";
 
@@ -86,9 +87,11 @@ export function Communaute() {
 
         <Reveal delay={580}>
           <p className="mt-11">
-            <Button href={WHATSAPP.group.href} size="lg">
-              {CTA.community}
-            </Button>
+            <Magnetic>
+              <Button href={WHATSAPP.group.href} size="lg">
+                {CTA.community}
+              </Button>
+            </Magnetic>
           </p>
         </Reveal>
       </Container>

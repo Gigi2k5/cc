@@ -7,6 +7,7 @@ import { HeroCanvas } from "@/components/three/HeroCanvas";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { GradientText } from "@/components/ui/GradientText";
+import { Magnetic } from "@/components/ui/Magnetic";
 import { TerminalKeyword, TerminalLine } from "@/components/ui/TerminalLine";
 import { CTA, WHATSAPP } from "@/lib/content";
 
@@ -128,12 +129,29 @@ export function Hero() {
               className="hero-fade mt-6 flex flex-col gap-3 lg:mt-10 lg:flex-row lg:flex-wrap lg:gap-4"
               style={delay(1150)}
             >
-              <Button href={WHATSAPP.primary.href} size="lg">
-                {CTA.advisor}
-              </Button>
-              <Button href={WHATSAPP.group.href} size="lg" variant="ghost">
-                {CTA.community}
-              </Button>
+              {/* `w-full` sur le bouton : le conteneur magnétique s'étire comme
+                  enfant de flex, mais le Button reste dimensionné par son
+                  contenu — sans ça les CTA cessent d'être pleine largeur en
+                  mobile. */}
+              <Magnetic>
+                <Button
+                  href={WHATSAPP.primary.href}
+                  size="lg"
+                  className="w-full lg:w-auto"
+                >
+                  {CTA.advisor}
+                </Button>
+              </Magnetic>
+              <Magnetic>
+                <Button
+                  href={WHATSAPP.group.href}
+                  size="lg"
+                  variant="ghost"
+                  className="w-full lg:w-auto"
+                >
+                  {CTA.community}
+                </Button>
+              </Magnetic>
             </div>
           </div>
 

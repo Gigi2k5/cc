@@ -27,6 +27,8 @@ npm run check:hero  # vérifs de la scène 3D du hero
 npm run check:content # fidélité de la copie, révélations, survols
 npm run check:community # section Communauté + couche réseau globale
 npm run check:faq   # accordéon FAQ (clavier) + contact + tous les liens
+npm run check:motion # magnétisme, spotlight, filets, cohérence motion.ts/CSS
+npm run check:touch # chemin tactile : ce qui doit être désactivé au doigt
 ```
 
 ## Structure
@@ -66,7 +68,7 @@ la scène WebGL et les couches canvas.
 - [x] Phase 4 — sections contenu (En bref, À propos, Ce qu'on fait, 2 pour 1, Comment ça marche)
 - [x] Phase 5 — communauté + réseau de fond global (couche fixe, parallaxe, intensification)
 - [x] Phase 6 — FAQ (accordéon accessible) + contact (liens WhatsApp réels)
-- [ ] Phase 7 — chorégraphie de mouvement
+- [x] Phase 7 — chorégraphie (magnétisme, spotlight, transitions de section)
 - [ ] Phase 8 — perf, a11y, SEO, déploiement
 
 ## Déploiement

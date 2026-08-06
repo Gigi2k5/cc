@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useRef, type CSSProperties, type ReactNode } from "react";
 
+import { useRevealed } from "@/lib/hooks/useRevealed";
 import { cn } from "@/lib/utils";
 
 type RevealProps = {
@@ -30,26 +31,7 @@ export function Reveal({
   as: Tag = "div",
 }: RevealProps) {
   const element = useRef<HTMLElement>(null);
-  const [revealed, setRevealed] = useState(false);
-
-  useEffect(() => {
-    const node = element.current;
-    if (!node || revealed) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setRevealed(true);
-        observer.disconnect();
-      },
-      // Se déclenche un peu avant l'entrée réelle : la cascade a le temps
-      // de démarrer plutôt que de surgir sous les yeux.
-      { rootMargin: "0px 0px -12% 0px", threshold: 0.01 },
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [revealed]);
+  const revealed = useRevealed(element);
 
   return (
     <Tag
