@@ -1,25 +1,18 @@
 import { Section } from "@/components/layout/Section";
+import { APropos } from "@/components/sections/APropos";
+import { CeQuOnFait } from "@/components/sections/CeQuOnFait";
+import { CommentCaMarche } from "@/components/sections/CommentCaMarche";
+import { DeuxPourUn } from "@/components/sections/DeuxPourUn";
+import { EnBref } from "@/components/sections/EnBref";
 import { Hero } from "@/components/sections/Hero";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 
 /**
- * PHASE 3 — le hero est réel. Les sections ci-dessous restent des repères
- * ancrés (scroll-spy testable), remplacés aux phases 4 à 6.
+ * PHASE 4 — hero et sections de contenu réels. Communauté, FAQ et Contact
+ * restent des repères ancrés (scroll-spy testable), remplacés aux phases 5 et 6.
  */
 
 const PLACEHOLDERS = [
-  {
-    id: "a-propos",
-    eyebrow: "À propos",
-    title: "Plus qu'un vendeur de PC.",
-    phase: "phase 4",
-  },
-  {
-    id: "ce-quon-fait",
-    eyebrow: "Ce qu'on fait",
-    title: "Cinq façons de te servir.",
-    phase: "phase 4",
-  },
   {
     id: "communaute",
     eyebrow: "L'univers Comlan",
@@ -44,6 +37,11 @@ export default function Home() {
   return (
     <main id="top" className="flex-1">
       <Hero />
+      <EnBref />
+      <APropos />
+      <CeQuOnFait />
+      <DeuxPourUn />
+      <CommentCaMarche />
 
       {PLACEHOLDERS.map((placeholder) => (
         <Section

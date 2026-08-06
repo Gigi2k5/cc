@@ -47,8 +47,15 @@ NEXT_PID=$!
 # SwiftShader : WebGL en rendu logiciel, seul moyen d'avoir du WebGL2 headless.
 # Les FPS mesurés ainsi n'ont aucune valeur — on ne mesure que des appels de
 # dessin et des états du DOM.
+# --blink-settings force hover/pointer : sans dispositif de pointage, Chrome
+# headless rapporte `hover: none`, et Tailwind v4 encapsule TOUTES ses variantes
+# `hover:` dans `@media (hover: hover)` — sans ça, aucun état de survol n'existe
+# et les tests correspondants passent à côté du sujet en croyant tester.
+# (Emulation.setEmulatedMedia ne gère pas ces deux features.)
+# availableHoverTypes/primaryHoverType : 2 = hover · pointerTypes : 4 = fine.
 google-chrome --headless --no-sandbox --disable-gpu \
   --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader \
+  --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 \
   --remote-debugging-port="$CDP_PORT" --remote-allow-origins='*' \
   --user-data-dir="$(mktemp -d)" about:blank > "$OUT/chrome.log" 2>&1 &
 CHROME_PID=$!

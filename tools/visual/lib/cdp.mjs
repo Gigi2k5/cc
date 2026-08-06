@@ -40,6 +40,7 @@ export async function connect({ port = 9222, out = "." } = {}) {
   // build périmé.
   await send("Network.setCacheDisabled", { cacheDisabled: true });
 
+
   return {
     send,
     close: () => ws.close(),
@@ -68,6 +69,8 @@ export async function connect({ port = 9222, out = "." } = {}) {
       });
     },
 
+    /* hover/pointer ne sont pas émulables ici : ils viennent des
+       --blink-settings passés au lancement par run.sh. */
     async emulateReducedMotion(on) {
       await send("Emulation.setEmulatedMedia", {
         features: on

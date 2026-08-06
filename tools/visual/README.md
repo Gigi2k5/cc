@@ -13,6 +13,8 @@ d'ouverture d'un panneau, focus clavier, arrêt de la boucle de rendu WebGL,
 npm run build                          # obligatoire : le harnais sert le build de prod
 bash tools/visual/run.sh checks/shell.mjs   # nav, panneau mobile, footer
 bash tools/visual/run.sh checks/hero.mjs    # scène 3D du hero
+bash tools/visual/run.sh checks/content.mjs # fidélité de la copie, révélations, survols
+bash tools/visual/run.sh checks/shots.mjs   # captures des sections (sans vérification)
 ```
 
 Sortie : résumé en console (code de sortie non nul si un échec) et captures PNG
@@ -42,3 +44,9 @@ logiciel, seul moyen d'obtenir WebGL2 sans écran. Conséquences :
   nettoie les ports et **abandonne si le CSS ne répond pas 200**.
 - Chrome met la page en cache disque : le client CDP force
   `Network.setCacheDisabled`. Un profil neuf est créé à chaque exécution.
+- Sans dispositif de pointage, Chrome headless rapporte `hover: none`. Or
+  Tailwind v4 encapsule **toutes** ses variantes `hover:` dans
+  `@media (hover: hover)` : sans correctif, aucun état de survol n'existe et les
+  tests correspondants passent à côté du sujet en croyant tester quelque chose.
+  `Emulation.setEmulatedMedia` ne gère pas ces features — `run.sh` les force via
+  `--blink-settings=primaryHoverType=2,…`.

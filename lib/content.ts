@@ -62,6 +62,112 @@ export const CTA = {
   community: "Rejoindre la communauté",
 } as const;
 
+/* ==========================================================================
+   Sections de contenu — copie validée, au mot près.
+   ========================================================================== */
+
+/** Bandeau de chips sous le hero. */
+export const EN_BREF = [
+  "Depuis 2022",
+  "PC neufs & reconditionnés",
+  "Concept 2 pour 1",
+  "Communauté active",
+  "Bénin",
+] as const;
+
+export const A_PROPOS = {
+  eyebrow: "À propos",
+  title: "Plus qu'un vendeur de PC.",
+  body: "Depuis 2022, Comlan Community rend la technologie accessible au Bénin. On vend des PC — mais on fait surtout en sorte que chaque client reparte avec la bonne machine, un vrai accompagnement, et l'accès à un univers communautaire.",
+  /** Bloc signature, voix machine. */
+  signature: [
+    "notre_signature = « deux pour le prix d'un »",
+    "statut = tout_est_calculé",
+  ],
+} as const;
+
+export const CE_QU_ON_FAIT = {
+  eyebrow: "Ce qu'on fait",
+  title: "Cinq façons de te servir.",
+  cards: [
+    {
+      slug: "PC-sur-mesure",
+      lead: "💻",
+      title: "PC sur mesure",
+      text: "Neuf ou reconditionné, choisi selon ton besoin et ton budget.",
+      specs: ["Core i5", "16 Go", "SSD 512"],
+    },
+    {
+      slug: "Deux-pour-un",
+      lead: "🎁",
+      title: "2 pour 1",
+      text: "Un avantage en plus à chaque pack, sans surcoût.",
+      specs: [],
+    },
+    {
+      slug: "Bacheliers",
+      lead: "🎓",
+      title: "Nouveaux bacheliers",
+      text: "La bonne machine pour ta filière, avec des conseils.",
+      specs: [],
+    },
+    {
+      slug: "Loup-Garou",
+      lead: "🐺",
+      title: "Univers Loup-Garou",
+      text: "Le jeu communautaire de stratégie qui rassemble.",
+      specs: [],
+    },
+    {
+      slug: "Réseau",
+      lead: "🤝",
+      title: "Un réseau",
+      text: "Des événements qui font vivre d'autres entrepreneurs.",
+      specs: [],
+    },
+  ],
+} as const;
+
+export const DEUX_POUR_UN = {
+  eyebrow: "Le concept",
+  /** Filigrane mono dans le coin du panneau. */
+  watermark: "TOUT_EST_CALCULÉ",
+  title: "Un pack. Un avantage en plus.",
+  body: "Tu paies un pack au prix standard et tu reçois un avantage additionnel, sans surcoût.",
+  blocks: [
+    { label: "[ 01 ]", title: "Ton PC", note: "config testée · prête à l'emploi" },
+    {
+      label: "[ 02 ]",
+      title: "Ton avantage",
+      note: "accessoire · service · bonus",
+    },
+    { label: "[ TOTAL ]", title: "Prix standard", note: "surcoût = 0" },
+  ],
+} as const;
+
+export const COMMENT_CA_MARCHE = {
+  eyebrow: "Comment ça marche",
+  title: "Trois étapes. Zéro surprise.",
+  steps: [
+    {
+      number: "01",
+      title: "Réservation",
+      text: "Tu nous écris sur WhatsApp, on cerne ton besoin et ton budget.",
+    },
+    {
+      number: "02",
+      title: "Préparation",
+      text: "Config, test complet, et ton avantage 2 pour 1 ajouté au pack.",
+    },
+    {
+      number: "03",
+      title: "Livraison",
+      text: "Livraison, installation, et mini-formation pour bien démarrer.",
+    },
+  ],
+  note: "délais typiques : 3–5 jours",
+} as const;
+
 /** Colonnes du pied de page. */
 export const FOOTER_COLUMNS = [
   {

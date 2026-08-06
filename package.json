@@ -9,7 +9,9 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check:shell": "bash tools/visual/run.sh checks/shell.mjs",
-    "check:hero": "bash tools/visual/run.sh checks/hero.mjs"
+    "check:hero": "bash tools/visual/run.sh checks/hero.mjs",
+    "check:content": "bash tools/visual/run.sh checks/content.mjs",
+    "shots": "bash tools/visual/run.sh checks/shots.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

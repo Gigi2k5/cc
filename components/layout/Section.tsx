@@ -21,8 +21,12 @@ type SectionProps = {
 };
 
 /**
- * Design system §5 — vertical section rhythm: clamp(80px, 12vw, 160px),
- * held in the `--section-y` token.
+ * Design system §5 — rythme vertical porté par `--section-y`.
+ *
+ * La moitié en haut, la moitié en bas : deux sections consécutives sont donc
+ * séparées d'exactement `--section-y`. Appliquer la valeur pleine des deux
+ * côtés doublerait l'écart (320px en desktop) là où la maquette validée en
+ * montre ~130.
  */
 export function Section({
   children,
@@ -36,7 +40,7 @@ export function Section({
     <section
       id={id}
       aria-labelledby={ariaLabelledby}
-      className={`relative py-[var(--section-y)] ${className}`.trim()}
+      className={`relative py-[calc(var(--section-y)/2)] ${className}`.trim()}
     >
       {bleed ? (
         children

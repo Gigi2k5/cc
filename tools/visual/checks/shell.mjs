@@ -143,7 +143,10 @@ for (const type of ["mousePressed", "mouseReleased"]) {
     type, x: box.x, y: box.y, button: "left", clickCount: 1,
   });
 }
-await sleep(700);
+/* Ouverture = rendu React puis fondu de 300 ms. Sous rendu logiciel, avec la
+   scène 3D et les révélations sur la même page, la chaîne met plus d'une
+   seconde à s'exécuter. */
+await sleep(2500);
 
 const opened = await evaluate(`(() => {
   const panel = document.getElementById("nav-panel");

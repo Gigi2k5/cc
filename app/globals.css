@@ -65,7 +65,8 @@
   --duration-standard: 300ms;
   --duration-reveal: 700ms;
 
-  /* Rythme vertical (§5) et gouttière (§7). */
+  /* Rythme vertical (§5) : écart entre deux sections consécutives. Section en
+     applique la moitié de chaque côté — voir Section.tsx. */
   --section-y: clamp(80px, 12vw, 160px);
   --gutter: 20px;
 
@@ -233,6 +234,29 @@
 }
 
 @layer components {
+  /* Révélation au scroll (§9) : fade + 24px, cascade portée par --reveal-delay.
+     L'état masqué n'existe que si le JS peut tourner : sans lui, personne ne
+     viendrait poser data-revealed et le contenu resterait invisible. Les
+     navigateurs sans `scripting` ignorent la règle, ce qui laisse tout visible
+     — c'est le bon sens de l'échec. */
+  @media (scripting: enabled) {
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition:
+        opacity var(--duration-reveal) var(--ease-reveal),
+        transform var(--duration-reveal) var(--ease-reveal);
+      transition-delay: var(--reveal-delay, 0ms);
+      will-change: opacity, transform;
+    }
+
+    .reveal[data-revealed="true"] {
+      opacity: 1;
+      transform: none;
+      will-change: auto;
+    }
+  }
+
   /* Ligne de titre masquée : l'enfant monte, le parent coupe. */
   .hero-line {
     display: block;
