@@ -131,14 +131,22 @@ check("Chip des délais", dom.delayChip === EXPECTED.delay, dom.delayChip);
 /* Révélations : tout doit avoir basculé après le passage de scroll. */
 const reveals = await evaluate(`(() => {
   const all = [...document.querySelectorAll(".reveal")];
-  const pending = all.filter(n => n.dataset.revealed !== "true");
-  const styles = all.map(n => getComputedStyle(n).opacity);
-  return { total: all.length, pending: pending.length, allOpaque: styles.every(o => Number(o) > 0.99) };
+  /* Les .reveal imbriqués (mots d'un titre) héritent du déclenchement de leur
+     bloc et ne portent pas data-revealed : le critère qui vaut pour tous est
+     d'être effectivement visible. */
+  const invisible = all.filter(n => Number(getComputedStyle(n).opacity) <= 0.99);
+  const roots = all.filter(n => !n.parentElement.closest(".reveal"));
+  return {
+    total: all.length,
+    invisible: invisible.length,
+    roots: roots.length,
+    rootsPending: roots.filter(n => n.dataset.revealed !== "true").length,
+  };
 })()`);
 check(
   "toutes les révélations se sont déclenchées",
-  reveals.pending === 0 && reveals.allOpaque,
-  `${reveals.total} éléments, ${reveals.pending} en attente`,
+  reveals.invisible === 0 && reveals.rootsPending === 0,
+  `${reveals.total} éléments (${reveals.roots} racines) · ${reveals.invisible} invisibles · ${reveals.rootsPending} racines en attente`,
 );
 
 const cascade = await evaluate(`(() => {

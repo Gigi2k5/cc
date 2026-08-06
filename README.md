@@ -25,6 +25,7 @@ npm run typecheck  # tsc --noEmit
 npm run check:shell # vérifs nav/footer en pilotant Chrome (build requis)
 npm run check:hero  # vérifs de la scène 3D du hero
 npm run check:content # fidélité de la copie, révélations, survols
+npm run check:community # section Communauté + couche réseau globale
 ```
 
 ## Structure
@@ -62,7 +63,7 @@ la scène WebGL et les couches canvas.
 - [x] Phase 2 — nav sticky + scroll-spy + burger, footer
 - [x] Phase 3 — hero 3D (WebGL, repli CSS, reduced-motion figé)
 - [x] Phase 4 — sections contenu (En bref, À propos, Ce qu'on fait, 2 pour 1, Comment ça marche)
-- [ ] Phase 5 — communauté + réseau de fond global
+- [x] Phase 5 — communauté + réseau de fond global (couche fixe, parallaxe, intensification)
 - [ ] Phase 6 — FAQ + contact
 - [ ] Phase 7 — chorégraphie de mouvement
 - [ ] Phase 8 — perf, a11y, SEO, déploiement

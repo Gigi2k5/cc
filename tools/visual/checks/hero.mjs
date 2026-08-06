@@ -3,30 +3,21 @@
  *
  * Lancé par tools/visual/run.sh — voir le README de ce dossier.
  */
-import { connect, createReport } from "../lib/cdp.mjs";
+import { DRAW_COUNTER_SOURCE, connect, createReport } from "../lib/cdp.mjs";
 
 const BASE = process.env.BASE ?? "http://localhost:3111";
 const cdp = await connect({ port: Number(process.env.CDP_PORT ?? 9222), out: process.env.OUT ?? "." });
 const { check, finish } = createReport();
 const { evaluate: ev, sleep, screenshot: shot, send } = cdp;
 
-/* Compteur d'appels de dessin, posé avant tout script de la page. */
-await send("Page.addScriptToEvaluateOnNewDocument", {
-  source: `
-    window.__draws = 0;
-    for (const proto of [
-      typeof WebGLRenderingContext !== "undefined" && WebGLRenderingContext.prototype,
-      typeof WebGL2RenderingContext !== "undefined" && WebGL2RenderingContext.prototype,
-    ]) {
-      if (!proto) continue;
-      for (const m of ["drawArrays","drawElements","drawArraysInstanced","drawElementsInstanced"]) {
-        const orig = proto[m];
-        if (!orig) continue;
-        proto[m] = function (...a) { window.__draws++; return orig.apply(this, a); };
-      }
-    }
-  `,
-});
+/* Compteur d'appels de dessin, par canvas, posé avant tout script de la page.
+   Depuis la phase 5 il y a deux contextes WebGL (puce du hero et couche
+   réseau) : un compteur global rendrait fausse l'assertion « le hero s'arrête
+   hors écran ». */
+await send("Page.addScriptToEvaluateOnNewDocument", { source: DRAW_COUNTER_SOURCE });
+
+/** Draws du seul canvas du hero. */
+const HERO_DRAWS = `window.__draws(document.querySelector("section canvas"))`;
 
 /* ------------------------------------------------------------ DESKTOP 1440 */
 await cdp.viewport({ width: 1440, height: 900 });
@@ -48,7 +39,7 @@ const canvas = await ev(`(() => {
     cssW: Math.round(r.width), cssH: Math.round(r.height),
     bufW: c.width, bufH: c.height,
     ratio: +(c.width / r.width).toFixed(2),
-    draws: window.__draws,
+    draws: window.__draws(c),
   };
 })()`);
 check("canvas WebGL monté dans le hero", canvas !== null, canvas ? `${canvas.cssW}×${canvas.cssH} css` : "absent");
@@ -61,13 +52,13 @@ check(
 
 /* Coût par frame, en appels de dessin (le vrai proxy GPU ; pas les FPS logiciels). */
 const perFrame = await ev(`(async () => {
-  const start = window.__draws;
+  const start = ${HERO_DRAWS};
   let frames = 0;
   await new Promise(res => {
     const t0 = performance.now();
     (function tick(){ frames++; performance.now() - t0 < 1500 ? requestAnimationFrame(tick) : res(); })();
   });
-  return { draws: window.__draws - start, frames };
+  return { draws: ${HERO_DRAWS} - start, frames };
 })()`);
 /* Budget attendu : 8 meshes pour la puce (pistes et plots étant instanciés),
    3 pour le réseau, plus les passes de bloom. ~22 est le régime normal ; au-delà
@@ -83,23 +74,23 @@ await ev(`window.scrollTo({top: 3000, behavior: "instant"})`);
 /* Deux fenêtres : la 1re peut contenir les frames déjà en vol (le rendu logiciel
    met ~370 ms par frame), la 2nde doit être strictement vide. */
 const drain = await ev(`(async () => {
-  const start = window.__draws;
+  const start = ${HERO_DRAWS};
   await new Promise(r => setTimeout(r, 2500));
-  return window.__draws - start;
+  return ${HERO_DRAWS} - start;
 })()`);
 const offscreen = await ev(`(async () => {
-  const start = window.__draws;
+  const start = ${HERO_DRAWS};
   await new Promise(r => setTimeout(r, 2500));
-  return window.__draws - start;
+  return ${HERO_DRAWS} - start;
 })()`);
 check("rendu arrêté hors écran", offscreen === 0, `drainage ${drain} draws, puis ${offscreen} draws sur 2,5 s`);
 
 await ev(`window.scrollTo({top: 0, behavior: "instant"})`);
 await sleep(1200);
 const back = await ev(`(async () => {
-  const start = window.__draws;
+  const start = ${HERO_DRAWS};
   await new Promise(r => setTimeout(r, 1000));
-  return window.__draws - start;
+  return ${HERO_DRAWS} - start;
 })()`);
 check("rendu repris au retour à l'écran", back > 0, `${back} draws pendant 1 s`);
 
@@ -146,7 +137,7 @@ const reduced = await ev(`(() => {
     eyebrowOpacity: eyebrow.opacity,
     typeWidth: type.width, typeDelay: type.animationDelay,
     caretAnim: caret.animationName, caretOpacity: caret.opacity,
-    draws: window.__draws,
+    draws: ${HERO_DRAWS},
   };
 })()`);
 check(
@@ -168,9 +159,9 @@ check("commande entièrement révélée", reduced.typeWidth !== "0px", `width=${
 check("la scène a bien produit une image figée", reduced.draws > 0, `${reduced.draws} draws`);
 
 const frozen = await ev(`(async () => {
-  const start = window.__draws;
+  const start = ${HERO_DRAWS};
   await new Promise(r => setTimeout(r, 2000));
-  return window.__draws - start;
+  return ${HERO_DRAWS} - start;
 })()`);
 check("image figée : plus aucun rendu", frozen === 0, `${frozen} draws pendant 2 s`);
 

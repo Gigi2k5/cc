@@ -14,6 +14,7 @@ npm run build                          # obligatoire : le harnais sert le build 
 bash tools/visual/run.sh checks/shell.mjs   # nav, panneau mobile, footer
 bash tools/visual/run.sh checks/hero.mjs    # scène 3D du hero
 bash tools/visual/run.sh checks/content.mjs # fidélité de la copie, révélations, survols
+bash tools/visual/run.sh checks/community.mjs # section Communauté + couche réseau
 bash tools/visual/run.sh checks/shots.mjs   # captures des sections (sans vérification)
 ```
 

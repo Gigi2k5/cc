@@ -90,6 +90,52 @@ export async function connect({ port = 9222, out = "." } = {}) {
   };
 }
 
+/**
+ * Compteur d'appels de dessin WebGL, **par canvas**.
+ *
+ * À injecter via `Page.addScriptToEvaluateOnNewDocument` avant tout script de
+ * la page. Un compteur global ne suffit plus depuis qu'il y a deux contextes
+ * (la puce du hero et la couche réseau) : il faut pouvoir affirmer que la
+ * boucle du hero s'arrête sans que celle du réseau ne fausse la mesure.
+ *
+ * Lecture : `window.__draws(canvasElement)`.
+ */
+export const DRAW_COUNTER_SOURCE = `
+  (() => {
+    const totals = new Map();
+    let nextId = 0;
+
+    for (const proto of [
+      typeof WebGLRenderingContext !== "undefined" && WebGLRenderingContext.prototype,
+      typeof WebGL2RenderingContext !== "undefined" && WebGL2RenderingContext.prototype,
+    ]) {
+      if (!proto) continue;
+      for (const method of ["drawArrays", "drawElements", "drawArraysInstanced", "drawElementsInstanced"]) {
+        const original = proto[method];
+        if (!original) continue;
+        proto[method] = function (...args) {
+          if (this.__drawId === undefined) {
+            this.__drawId = ++nextId;
+            if (this.canvas) this.canvas.dataset.drawId = String(this.__drawId);
+          }
+          totals.set(this.__drawId, (totals.get(this.__drawId) ?? 0) + 1);
+          return original.apply(this, args);
+        };
+      }
+    }
+
+    window.__draws = (canvas) => {
+      if (!canvas) {
+        let sum = 0;
+        for (const n of totals.values()) sum += n;
+        return sum;
+      }
+      const id = Number(canvas.dataset.drawId);
+      return totals.get(id) ?? 0;
+    };
+  })();
+`;
+
 /** Collecteur de résultats avec sortie lisible et code de sortie non nul. */
 export function createReport() {
   const results = [];

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 import { Footer } from "@/components/layout/Footer";
 import { Nav } from "@/components/layout/Nav";
+import { NetworkLayer } from "@/components/three/NetworkLayer";
 import { fontVariables } from "@/lib/fonts";
 
 import "./globals.css";
@@ -22,6 +23,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fr" className={`${fontVariables} h-full`}>
       <body className="flex min-h-full flex-col bg-encre text-craie">
+        {/* Réseau global : fixe, derrière toute la page. Le contenu passe
+            au-dessus via z-10, et les fonds de section qui doivent le laisser
+            voir sont semi-transparents. */}
+        <NetworkLayer />
         <Nav />
         {children}
         <Footer />

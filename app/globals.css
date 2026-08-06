@@ -221,6 +221,17 @@
   }
 }
 
+/* Dérive du motif terminal en filigrane : très lente, en boucle. Les lignes
+   sont doublées côté composant, la boucle sur -50 % ne saute donc pas. */
+@keyframes terminal-drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
 /* Type-on du motif terminal. La largeur est exprimée en `ch` : en monospace
    c'est exactement l'avance d'un caractère, donc la cible est juste au pixel,
    et le caret placé juste après suit naturellement la frappe. */
@@ -255,6 +266,14 @@
       transform: none;
       will-change: auto;
     }
+
+    /* Les mots d'un titre découpé héritent du déclenchement de leur bloc, tout
+       en gardant chacun son propre --reveal-delay. */
+    .reveal[data-revealed="true"] .reveal {
+      opacity: 1;
+      transform: none;
+      will-change: auto;
+    }
   }
 
   /* Ligne de titre masquée : l'enfant monte, le parent coupe. */
@@ -275,6 +294,10 @@
   .hero-fade {
     animation: hero-fade 0.9s var(--ease-reveal) both;
     animation-delay: var(--rise-delay, 0ms);
+  }
+
+  .terminal-drift {
+    animation: terminal-drift 180s linear infinite;
   }
 
   .terminal-type {

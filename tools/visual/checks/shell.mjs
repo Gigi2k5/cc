@@ -54,7 +54,10 @@ for (const target of ids) {
   await evaluate(`(() => {
     const el = document.getElementById(${JSON.stringify(target)});
     const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--nav-h"));
-    window.scrollTo({ top: el.offsetTop - navH + 40, behavior: "instant" });
+    /* Position absolue, pas offsetTop : depuis que <main> est positionné,
+       offsetTop est relatif à lui et non au document. */
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top - navH + 40, behavior: "instant" });
   })()`);
   await sleep(600);
   const current = await evaluate(

@@ -168,6 +168,33 @@ export const COMMENT_CA_MARCHE = {
   note: "délais typiques : 3–5 jours",
 } as const;
 
+export const COMMUNAUTE = {
+  eyebrow: "L'univers Comlan",
+  /** Titre révélé mot à mot ; le dernier segment est en italique dégradé. */
+  title: ["Ici, on n'achète pas qu'un PC.", "On rejoint"],
+  titleAccent: "un univers.",
+  body: "Un jeu communautaire de stratégie, des éditions événementielles, un réseau qui tire tout le monde vers le haut.",
+  tags: [
+    "🐺 Loup-Garou · jeu de stratégie",
+    "Éditions présidentielles",
+    "Réseautage",
+  ],
+  /**
+   * Motif terminal en filigrane (~3,5 % d'opacité). Loup-Garou reste cadré
+   * comme jeu communautaire : aucune mention de crédits, mise ou retrait (§11).
+   */
+  terminal: [
+    "loup-garou --edition présidentielle --joueurs 24",
+    'comlan network --event "soirée entrepreneurs"',
+    "communauté --statut active --depuis 2022",
+    "loup-garou --role village --nuit 3",
+    "comlan --rejoindre --via whatsapp",
+    "réseau --profil étudiants,jeunes-pros,tpe",
+    "loup-garou --partie hebdo --inscription ouverte",
+    'comlan network --statut "ça tire vers le haut"',
+  ],
+} as const;
+
 /** Colonnes du pied de page. */
 export const FOOTER_COLUMNS = [
   {

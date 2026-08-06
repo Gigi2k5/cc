@@ -1,14 +1,14 @@
 "use client";
 
 import { Environment, Lightformer } from "@react-three/drei";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import type { Group, PointLight } from "three";
 
 import { Chip } from "./Chip";
 import type { ChipFocus } from "./HeroCanvas";
-import { PointField } from "./PointField";
+import { WarmUpThenFreeze } from "./WarmUpThenFreeze";
 
 /**
  * La scène du hero. Montée uniquement côté client par HeroCanvas, jamais en SSR.
@@ -65,42 +65,6 @@ function FocalLight({ reactive }: { reactive: boolean }) {
       color="#fff4ec"
     />
   );
-}
-
-/** Nombre de rendus nécessaires pour que la carte d'environnement et les
- *  matériaux se résolvent, avant de figer l'image. */
-const WARMUP_FRAMES = 8;
-
-/**
- * En animations réduites, la boucle est en « demand » : on force quelques
- * rendus, puis l'image reste figée.
- *
- * Enchaînement de requestAnimationFrame et non setInterval : chaque invalidate
- * suit une frame réellement produite. Avec un timer, sur une machine lente
- * (ou un rendu logiciel), les appels s'accumulent plus vite qu'ils ne se
- * consomment et la scène continue de rendre longtemps après.
- */
-function WarmUpThenFreeze() {
-  const invalidate = useThree((state) => state.invalidate);
-  const done = useRef(false);
-
-  useEffect(() => {
-    if (done.current) return;
-
-    let rendered = 0;
-    let frame = 0;
-
-    const step = () => {
-      invalidate();
-      if (++rendered < WARMUP_FRAMES) frame = requestAnimationFrame(step);
-      else done.current = true;
-    };
-    frame = requestAnimationFrame(step);
-
-    return () => cancelAnimationFrame(frame);
-  }, [invalidate]);
-
-  return null;
 }
 
 export default function HeroScene({
@@ -180,8 +144,10 @@ export default function HeroScene({
         />
       </Environment>
 
+      {/* Le réseau de points n'est plus ici : il vit dans NetworkLayer, une
+          couche fixe qui traverse toute la page (phase 5). Le hero ne porte
+          plus que la puce. */}
       <PointerParallax enabled={animate && parallax}>
-        <PointField preset={quality} animate={animate} />
         <Chip animate={animate} focus={focus} />
       </PointerParallax>
 

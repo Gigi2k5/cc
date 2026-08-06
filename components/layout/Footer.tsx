@@ -8,7 +8,7 @@ import { Container } from "./Container";
 /** Design system §10 — noir de marque, wordmark + phrase, colonnes, réseaux. */
 export function Footer() {
   return (
-    <footer className="border-t border-ligne-faible bg-noir">
+    <footer className="relative z-10 border-t border-ligne-faible bg-noir">
       <Container className="pt-20 pb-12">
         <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr_1fr_1fr] lg:gap-14">
           <div>

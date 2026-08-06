@@ -39,7 +39,9 @@ export function Hero() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(1100px 750px at 66% 46%, #141010 0%, #0a0909 45%, #070707 100%)",
+            /* Semi-transparent : la couche réseau fixe passe derrière le hero,
+               un aplat opaque la masquerait. */
+            "radial-gradient(1100px 750px at 66% 46%, rgba(20,16,16,0.82) 0%, rgba(10,9,9,0.62) 45%, rgba(7,7,7,0.42) 100%)",
         }}
       />
       <div
@@ -60,7 +62,7 @@ export function Hero() {
         className="absolute inset-0 z-1 hidden lg:block"
         style={{
           background:
-            "linear-gradient(to right, #080808 0%, rgba(8,8,8,0.9) 24%, rgba(8,8,8,0.5) 42%, transparent 58%)",
+            "linear-gradient(to right, rgba(8,8,8,0.96) 0%, rgba(8,8,8,0.86) 24%, rgba(8,8,8,0.48) 42%, transparent 58%)",
         }}
       />
 
