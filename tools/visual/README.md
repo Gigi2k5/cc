@@ -15,6 +15,7 @@ bash tools/visual/run.sh checks/shell.mjs   # nav, panneau mobile, footer
 bash tools/visual/run.sh checks/hero.mjs    # scène 3D du hero
 bash tools/visual/run.sh checks/content.mjs # fidélité de la copie, révélations, survols
 bash tools/visual/run.sh checks/community.mjs # section Communauté + couche réseau
+bash tools/visual/run.sh checks/faq-contact.mjs # accordéon FAQ au clavier + contact + liens
 bash tools/visual/run.sh checks/shots.mjs   # captures des sections (sans vérification)
 ```
 
@@ -51,3 +52,6 @@ logiciel, seul moyen d'obtenir WebGL2 sans écran. Conséquences :
   tests correspondants passent à côté du sujet en croyant tester quelque chose.
   `Emulation.setEmulatedMedia` ne gère pas ces features — `run.sh` les force via
   `--blink-settings=primaryHoverType=2,…`.
+- `Input.dispatchKeyEvent` en `rawKeyDown` ne fait pas cliquer un `<button>` :
+  il faut `keyDown` avec `text` (`\r` pour Entrée, espace pour Espace). Entrée
+  déclenche le clic au keydown, Espace au keyup.

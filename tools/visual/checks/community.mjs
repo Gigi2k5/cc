@@ -101,7 +101,7 @@ const boost = await evaluate(`(() => {
   const measure = () => {
     const rect = section.getBoundingClientRect();
     const distance = Math.abs(rect.top + rect.height / 2 - innerHeight / 2);
-    return Math.max(0, 1 - distance / innerHeight);
+    return Math.max(0, 1 - distance / (innerHeight * 0.8));
   };
   // Section centrée à l'écran.
   section.scrollIntoView({ block: "center", behavior: "instant" });

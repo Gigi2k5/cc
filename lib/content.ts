@@ -195,6 +195,52 @@ export const COMMUNAUTE = {
   ],
 } as const;
 
+export const FAQ = {
+  eyebrow: "FAQ",
+  title: "Les questions qu'on nous pose.",
+  items: [
+    {
+      question: "Quels PC proposez-vous ?",
+      answer:
+        "Des configurations adaptées (étudiant, pro, gaming), neuves ou reconditionnées, testées et prêtes à l'emploi.",
+    },
+    {
+      question: "C'est quoi « 2 pour 1 » ?",
+      answer:
+        "Tu paies un pack au prix standard et tu reçois un avantage additionnel (accessoire, service ou bonus) sans surcoût.",
+    },
+    {
+      question: "Comment se passe la livraison ?",
+      answer:
+        "Livraison ou retrait local, avec installation et mini-formation si besoin.",
+    },
+    {
+      question: "Quels moyens de paiement ?",
+      answer:
+        "Cash, acompte + solde à la livraison, paiement par tranche selon les cas ; précommande en période de forte demande.",
+    },
+    {
+      question: "Et le SAV ?",
+      answer:
+        "Support WhatsApp, diagnostic, conseils, et relais partenaires si nécessaire.",
+    },
+    {
+      question: "C'est quoi Loup-Garou ?",
+      answer:
+        "Un jeu communautaire de stratégie sur WhatsApp, avec des parties régulières et des éditions événementielles.",
+    },
+  ],
+} as const;
+
+export const CONTACT = {
+  eyebrow: "Contact",
+  /** Le mot en dégradé est isolé : un à deux mots par écran (§3). */
+  titleBefore: "On en parle sur",
+  titleAccent: "WhatsApp",
+  titleAfter: "?",
+  meta: [`horaires : ${HOURS}`, DELIVERY],
+} as const;
+
 /** Colonnes du pied de page. */
 export const FOOTER_COLUMNS = [
   {

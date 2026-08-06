@@ -34,10 +34,11 @@ export function useScrollSignals(focusId: string): RefObject<ScrollSignals> {
 
       const rect = target.getBoundingClientRect();
       const viewport = window.innerHeight;
-      // Distance entre le centre de la section et celui de l'écran, ramenée
-      // sur une plage d'une hauteur d'écran.
+      /* Distance entre le centre de la section et celui de l'écran. La plage
+         est plus courte qu'une hauteur d'écran (0,8) : sinon l'intensification
+         déborde sur la FAQ voisine, dont le texte est dense. */
       const distance = Math.abs(rect.top + rect.height / 2 - viewport / 2);
-      signals.current.boost = Math.max(0, 1 - distance / viewport);
+      signals.current.boost = Math.max(0, 1 - distance / (viewport * 0.8));
     };
 
     const schedule = () => {
