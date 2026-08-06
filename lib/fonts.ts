@@ -43,9 +43,16 @@ export const youngSerif = Young_Serif({
   variable: "--font-young-serif",
 });
 
-/** Body copy, UI, buttons, lists. */
+/**
+ * Body copy, UI, buttons, lists.
+ *
+ * `latin` seul : vérifié caractère par caractère sur la copie de content.ts,
+ * il couvre tout le français utilisé — y compris « œ » (U+0153), qui est dans
+ * U+0152-0153. Le sous-ensemble `latin-ext` n'apportait rien et pesait 47 Ko
+ * de préchargement. Les emoji viennent de la police système, pas d'Inter.
+ */
 export const inter = Inter({
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
 });

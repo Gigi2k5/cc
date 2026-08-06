@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Comlan Community">
+  <title>Comlan Community</title>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0.5">
+      <stop offset="0" stop-color="#FA1500" />
+      <stop offset="1" stop-color="#EA441A" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="#080808" />
+  <!-- Substrat : le contour de la puce. Trait épais pour tenir à 16px. -->
+  <rect x="7" y="7" width="18" height="18" rx="4.5" fill="none" stroke="#3a3a3a" stroke-width="2" />
+  <!-- Cœur émissif. -->
+  <rect x="12" y="12" width="8" height="8" rx="2" fill="url(#g)" />
+  <!-- Pistes : deux par côté, comme sur la scène 3D. -->
+  <g fill="#3a3a3a">
+    <rect x="12.5" y="3.5" width="2" height="3.5" rx="1" />
+    <rect x="17.5" y="3.5" width="2" height="3.5" rx="1" />
+    <rect x="12.5" y="25" width="2" height="3.5" rx="1" />
+    <rect x="17.5" y="25" width="2" height="3.5" rx="1" />
+    <rect x="3.5" y="12.5" width="3.5" height="2" rx="1" />
+    <rect x="3.5" y="17.5" width="3.5" height="2" rx="1" />
+    <rect x="25" y="12.5" width="3.5" height="2" rx="1" />
+    <rect x="25" y="17.5" width="3.5" height="2" rx="1" />
+  </g>
+</svg>

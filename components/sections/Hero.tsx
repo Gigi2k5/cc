@@ -92,7 +92,7 @@ export function Hero() {
             </h1>
 
             <p
-              className="hero-fade mx-auto mt-4 max-w-[20rem] text-[0.9375rem] leading-[1.6] text-craie-2 lg:mx-0 lg:mt-8 lg:max-w-[30rem] lg:text-[1.125rem] lg:leading-[1.65]"
+              className="hero-fade mx-auto mt-4 max-w-[20rem] text-[0.9375rem] leading-[1.6] text-craie-2 sm:max-w-[30rem] sm:text-[1.0625rem] lg:mx-0 lg:mt-8 lg:text-[1.125rem] lg:leading-[1.65]"
               style={delay(700)}
             >
               Des PC neufs et reconditionnés adaptés à ton besoin, un
@@ -126,7 +126,7 @@ export function Hero() {
             </div>
 
             <div
-              className="hero-fade mt-6 flex flex-col gap-3 lg:mt-10 lg:flex-row lg:flex-wrap lg:gap-4"
+              className="hero-fade mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-4 lg:mt-10 lg:justify-start"
               style={delay(1150)}
             >
               {/* `w-full` sur le bouton : le conteneur magnétique s'étire comme
@@ -137,7 +137,7 @@ export function Hero() {
                 <Button
                   href={WHATSAPP.primary.href}
                   size="lg"
-                  className="w-full lg:w-auto"
+                  className="w-full sm:w-auto"
                 >
                   {CTA.advisor}
                 </Button>
@@ -147,7 +147,7 @@ export function Hero() {
                   href={WHATSAPP.group.href}
                   size="lg"
                   variant="ghost"
-                  className="w-full lg:w-auto"
+                  className="w-full sm:w-auto"
                 >
                   {CTA.community}
                 </Button>

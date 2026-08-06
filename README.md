@@ -5,14 +5,18 @@ reconditionnés au Bénin, concept « deux pour le prix d'un », univers
 communautaire.
 
 Ce dépôt ne contient que le **site public**. La boutique e-commerce est un site
-séparé (à venir).
+séparé (à venir). Le CRM est un outil interne : il n'est ni mentionné ni lié
+nulle part.
 
 ## Stack
 
-- Next.js 16 (App Router) + TypeScript
+- Next.js 16 (App Router) + TypeScript strict
 - Tailwind CSS v4 — tokens déclarés dans `app/globals.css` (`@theme`)
 - `next/font/google` — Instrument Serif, Gloock, Young Serif, Inter, JetBrains Mono
-- À venir : `three` / `@react-three/fiber` (hero 3D), `framer-motion`, `lucide-react`
+- `three` / `@react-three/fiber` / `drei` / `postprocessing` pour la puce du hero
+  et le réseau de points, chargés **après l'hydratation** (hors chemin critique)
+- `lucide-react` pour les icônes d'interface ; les logos de marque sont des
+  tracés inlinés (lucide 1.x n'en fournit plus)
 
 ## Commandes
 
@@ -22,42 +26,139 @@ npm run build      # build de production
 npm run start      # sert le build de production
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
-npm run check:shell # vérifs nav/footer en pilotant Chrome (build requis)
-npm run check:hero  # vérifs de la scène 3D du hero
-npm run check:content # fidélité de la copie, révélations, survols
-npm run check:community # section Communauté + couche réseau globale
-npm run check:faq   # accordéon FAQ (clavier) + contact + tous les liens
-npm run check:motion # magnétisme, spotlight, filets, cohérence motion.ts/CSS
-npm run check:touch # chemin tactile : ce qui doit être désactivé au doigt
 ```
+
+### Vérifications automatisées
+
+Elles pilotent Chrome headless via CDP, **sans dépendance de test**, et
+nécessitent un `npm run build` préalable. Voir
+[`tools/visual/README.md`](tools/visual/README.md) — notamment ce que le harnais
+**ne peut pas** mesurer.
+
+```bash
+npm run build
+npm run check:shell       # nav sticky, scroll-spy, panneau mobile, footer
+npm run check:hero        # scène 3D : draws, arrêt hors écran, reduced-motion
+npm run check:content     # fidélité de la copie au brief, révélations, survols
+npm run check:community   # section Communauté + couche réseau globale
+npm run check:faq         # accordéon au clavier, contact, tous les liens
+npm run check:motion      # magnétisme, spotlight, filets, cohérence motion.ts/CSS
+npm run check:touch       # ce qui doit être désactivé au doigt
+npm run check:audit       # charge utile, axe-core, sémantique, clavier, SEO
+npm run check:breakpoints # 360 / 768 / 1024 / 1440
+npm run shots             # captures des sections (sans vérification)
+```
+
+Sorties dans `tools/visual/out/` (non versionné).
 
 ## Structure
 
 ```
 app/
-  layout.tsx      polices, metadata, grain global
+  layout.tsx      polices, metadata + Open Graph, couche réseau, grain
   page.tsx        assemblage des sections
-  globals.css     tokens (@theme) + base + utilitaires maison
+  globals.css     tokens (@theme) + base + utilitaires + animations
+  icon.svg        favicon · apple-icon.png · robots.ts · sitemap.ts
+  dev/            démo interne des primitives (noindex, non liée)
 components/
-  layout/         Section · Container · Nav · Footer
+  layout/         Section · Container · Nav · Footer · SectionRule
   ui/             primitives du design system
-  sections/       sections de la page
-  three/          scène WebGL du hero + couche réseau
+  sections/       les 9 sections de la page
+  three/          scène du hero, couche réseau, repli CSS
 lib/
-  fonts.ts        les 5 polices et leurs variables CSS
+  content.ts      TOUTE la copie française et les liens réels
+  fonts.ts · motion.ts · site.ts · contrast.ts · utils.ts
+  hooks/          scroll-spy, révélation, capacité de l'appareil, pointeur…
 references/       design system + maquette validée (lecture seule)
+tools/visual/     harnais de vérification CDP
 ```
 
 ## Design system
 
-`references/Comlan_Community_Design_System(1).md` fait foi pour les règles
-(couleurs, typo, motion, a11y). `references/Comlan Maquette.dc.html` fait foi
-pour le contenu et le layout.
+`references/Comlan_Community_Design_System(1).md` fait foi pour les règles.
+`references/Comlan Maquette.dc.html` fait foi pour le contenu et le layout.
 
 Les tokens vivent **uniquement** dans `app/globals.css`. Ils sont disponibles à
-la fois comme utilitaires Tailwind (`bg-encre`, `rounded-lg`, `shadow-glow`,
-`font-display`, `max-w-page`) et comme variables CSS (`var(--color-encre)`) pour
-la scène WebGL et les couches canvas.
+la fois comme utilitaires Tailwind (`bg-encre`, `rounded-lg`, `font-display`,
+`max-w-page`) et comme variables CSS (`var(--color-encre)`) pour la scène WebGL.
+`lib/motion.ts` en est le miroir JS, et `check:motion` vérifie qu'ils ne
+dérivent pas.
+
+## Déploiement (Vercel)
+
+1. **Pousser le dépôt** sur GitHub / GitLab.
+2. Sur [vercel.com](https://vercel.com) → *Add New Project* → importer le dépôt.
+   Le framework est détecté automatiquement ; aucune commande à personnaliser.
+3. **Définir la variable d'environnement** (Project Settings → Environment
+   Variables), pour les trois environnements :
+
+   | Variable | Valeur |
+   |---|---|
+   | `NEXT_PUBLIC_SITE_URL` | l'URL publique finale, sans slash final |
+
+   Elle alimente le lien canonique, `og:url` et `sitemap.xml`. Sans elle, le
+   repli est `https://comlan-community.vercel.app` — à corriger dès que le
+   domaine définitif est arrêté.
+4. **Déployer.** Le site est entièrement statique (prérendu) : ni base de
+   données, ni route serveur, ni secret.
+5. Après déploiement, revalider :
+
+   ```bash
+   npm run build && npm run check:audit
+   ```
+
+   puis contrôler l'aperçu de partage sur les
+   [outils de debug Facebook](https://developers.facebook.com/tools/debug/) et
+   [X](https://cards-dev.twitter.com/validator).
+
+### Domaine personnalisé
+
+Project Settings → Domains → ajouter le domaine, puis suivre les
+enregistrements DNS indiqués. Mettre `NEXT_PUBLIC_SITE_URL` à jour ensuite et
+redéployer, sinon le canonique continue de pointer vers l'URL Vercel.
+
+## Budgets mesurés
+
+Relevés par `check:audit` sur le build de production, en octets transférés :
+
+| Poste | Mesure | Budget |
+|---|---|---|
+| JS critique (bloque le 1er rendu) | 139 Ko | ≤ 180 Ko |
+| JS différé (scène 3D) | 363 Ko | hors chemin critique |
+| CSS | 9 Ko | ≤ 20 Ko |
+| Polices préchargées | 117 Ko | ≤ 140 Ko |
+| Total page | 682 Ko en 19 requêtes | < 800 Ko |
+| CLS | 0 | < 0,02 |
+
+Aucune requête vers un domaine tiers : polices auto-hébergées, carte
+d'environnement WebGL peinte localement, sprites dessinés sur canvas.
+
+## Accessibilité
+
+`check:audit` fait tourner **axe-core** (WCAG 2.1 A/AA + bonnes pratiques) :
+aucune violation. Deux exceptions assumées, arbitrées et documentées :
+
+1. **Blanc sur le dégradé accent** — 4,06:1, conforme au seuil « grand texte »
+   seulement. C'est le rendu validé, et blanc-sur-rouge de marque est la norme
+   du métier. Visible sur `/dev` sous la table de contrastes.
+2. **Filigrane terminal de la section Communauté** — 1,04:1, mais c'est de la
+   décoration pure à 3,5 % d'opacité sous `aria-hidden`, explicitement exemptée
+   par le WCAG 1.4.3. `check:audit` épingle cette exception : il échoue si une
+   autre violation de contraste apparaît, ou si celle-ci sort du filigrane.
+
+Le reste est mesuré : parcours clavier complet avec anneau de focus sur chaque
+arrêt, hiérarchie de titres continue, repères sémantiques, cibles tactiles
+≥ 44 px, `prefers-reduced-motion` respecté partout.
+
+## Points ouverts
+
+- **Handles réseaux** — Facebook, Instagram et Medium pointent sur `#`. À
+  remplacer dans `lib/content.ts` (`SOCIALS`).
+- **Domaine définitif** — voir `NEXT_PUBLIC_SITE_URL` ci-dessus.
+- **Images produit** — le site n'en utilise aucune pour l'instant ; prévoir
+  `next/image` si des visuels de PC sont ajoutés.
+- **Fps réels** — le harnais tourne en WebGL logiciel et ne peut pas les
+  mesurer. À contrôler sur machine et sur téléphone avant mise en production.
 
 ## Avancement
 
@@ -65,12 +166,8 @@ la scène WebGL et les couches canvas.
 - [x] Phase 1 — primitives du design system (démo : `/dev`)
 - [x] Phase 2 — nav sticky + scroll-spy + burger, footer
 - [x] Phase 3 — hero 3D (WebGL, repli CSS, reduced-motion figé)
-- [x] Phase 4 — sections contenu (En bref, À propos, Ce qu'on fait, 2 pour 1, Comment ça marche)
-- [x] Phase 5 — communauté + réseau de fond global (couche fixe, parallaxe, intensification)
+- [x] Phase 4 — sections contenu
+- [x] Phase 5 — communauté + réseau de fond global
 - [x] Phase 6 — FAQ (accordéon accessible) + contact (liens WhatsApp réels)
 - [x] Phase 7 — chorégraphie (magnétisme, spotlight, transitions de section)
-- [ ] Phase 8 — perf, a11y, SEO, déploiement
-
-## Déploiement
-
-Vercel (instructions détaillées en phase 8).
+- [x] Phase 8 — perf, a11y, SEO, responsive, déploiement

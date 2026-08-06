@@ -17,6 +17,8 @@ bash tools/visual/run.sh checks/content.mjs # fidélité de la copie, révélati
 bash tools/visual/run.sh checks/community.mjs # section Communauté + couche réseau
 bash tools/visual/run.sh checks/faq-contact.mjs # accordéon FAQ au clavier + contact + liens
 bash tools/visual/run.sh checks/motion.mjs  # magnétisme, spotlight, filets de section
+bash tools/visual/run.sh checks/audit.mjs   # charge utile, axe-core, sémantique, clavier, SEO
+bash tools/visual/run.sh checks/breakpoints.mjs # 360 / 768 / 1024 / 1440
 bash tools/visual/run.sh checks/shots.mjs   # captures des sections (sans vérification)
 
 # Chemin tactile — ce qui doit être DÉSACTIVÉ au doigt.
@@ -25,6 +27,13 @@ POINTER=coarse bash tools/visual/run.sh checks/touch.mjs
 
 Sortie : résumé en console (code de sortie non nul si un échec) et captures PNG
 dans `tools/visual/out/` (non versionné).
+
+## Mesure de la charge utile
+
+Le partage critique / différé se fait contre le **HTML servi** (relu par
+`fetch(location.href)`), pas contre le DOM : le DOM contient aussi les scripts
+injectés par le loader, ce qui ferait passer un chunk différé pour du critique.
+Erreur commise une première fois, d'où la précision.
 
 ## Ce que le harnais ne peut pas mesurer
 

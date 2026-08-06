@@ -15,7 +15,9 @@
     "check:community": "bash tools/visual/run.sh checks/community.mjs",
     "check:faq": "bash tools/visual/run.sh checks/faq-contact.mjs",
     "check:motion": "bash tools/visual/run.sh checks/motion.mjs",
-    "check:touch": "POINTER=coarse bash tools/visual/run.sh checks/touch.mjs"
+    "check:touch": "POINTER=coarse bash tools/visual/run.sh checks/touch.mjs",
+    "check:audit": "bash tools/visual/run.sh checks/audit.mjs",
+    "check:breakpoints": "bash tools/visual/run.sh checks/breakpoints.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
@@ -32,6 +34,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "axe-core": "^4.13.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "tailwindcss": "^4",
