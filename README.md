@@ -96,15 +96,22 @@ dérivent pas.
    |---|---|
    | `NEXT_PUBLIC_SITE_URL` | l'URL publique finale, sans slash final |
 
-   Elle alimente le lien canonique, `og:url` et `sitemap.xml`. Sans elle, le
-   repli est `https://comlan-community.vercel.app` — à corriger dès que le
-   domaine définitif est arrêté.
+   Elle alimente le lien canonique, `og:url`, l'URL absolue de l'image de
+   partage, le sitemap et le robots.txt.
+
+   Sans elle, le repli est `VERCEL_PROJECT_PRODUCTION_URL`, injectée par Vercel
+   au build : le site reste donc cohérent. **Ne jamais y mettre une URL devinée**
+   — une valeur inventée est pire que pas de valeur : elle a déjà fait pointer le
+   canonique et l'image OG vers un domaine appartenant à un tiers, et l'aperçu de
+   partage ne se chargeait plus. `check:audit` vérifie désormais cette
+   cohérence.
 4. **Déployer.** Le site est entièrement statique (prérendu) : ni base de
    données, ni route serveur, ni secret.
 5. Après déploiement, revalider :
 
    ```bash
-   npm run build && npm run check:audit
+   # audite le site RÉELLEMENT déployé, pas le build local
+   TARGET=https://ton-url.vercel.app bash tools/visual/run.sh checks/audit.mjs
    ```
 
    puis contrôler l'aperçu de partage sur les

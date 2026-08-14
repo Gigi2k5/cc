@@ -266,6 +266,26 @@ check(
 );
 check("carte Twitter/X déclarée", head.twitterCard === "summary_large_image", `${head.twitterCard}`);
 check("URL canonique déclarée", !!head.canonical, `${head.canonical}`);
+/* Assertion née d'un vrai incident : le canonique et l'image OG pointaient vers
+   un domaine appartenant à un tiers (NEXT_PUBLIC_SITE_URL laissée sur une valeur
+   devinée). L'audit ne le voyait pas : il vérifiait leur présence, pas leur
+   cohérence avec l'origine servie. L'aperçu de partage était cassé. */
+const servedOrigin = await evaluate(`location.origin`);
+/* En local, le harnais sert sur un autre port que le repli de développement :
+   on compare l'hôte, pas le port. En production les deux doivent coïncider. */
+const host = (url) => {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return null;
+  }
+};
+check(
+  "canonique et image OG sur l'origine réellement servie",
+  host(head.canonical) === host(servedOrigin) &&
+    host(head.ogImage) === host(servedOrigin),
+  `servi=${host(servedOrigin)} · canonique=${host(head.canonical)} · og:image=${host(head.ogImage)}`,
+);
 check("favicon propre au projet", head.icons.some((h) => h && !h.includes("favicon.ico")), head.icons.join(" "));
 check("theme-color défini", head.themeColor === "#080808", `${head.themeColor}`);
 

@@ -23,6 +23,9 @@ bash tools/visual/run.sh checks/shots.mjs   # captures des sections (sans vérif
 
 # Chemin tactile — ce qui doit être DÉSACTIVÉ au doigt.
 POINTER=coarse bash tools/visual/run.sh checks/touch.mjs
+
+# Auditer un site DÉJÀ déployé au lieu du build local.
+TARGET=https://exemple.vercel.app bash tools/visual/run.sh checks/audit.mjs
 ```
 
 Sortie : résumé en console (code de sortie non nul si un échec) et captures PNG

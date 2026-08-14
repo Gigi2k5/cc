@@ -41,8 +41,14 @@ for port in "$PORT" "$CDP_PORT"; do
 done
 sleep 1
 
-npx next start -p "$PORT" > "$OUT/next.log" 2>&1 &
-NEXT_PID=$!
+# TARGET permet d'auditer un site DÉJÀ déployé au lieu du build local :
+#   TARGET=https://exemple.vercel.app bash tools/visual/run.sh checks/audit.mjs
+if [ -n "${TARGET:-}" ]; then
+  echo "  cible externe : $TARGET (pas de serveur local)"
+else
+  npx next start -p "$PORT" > "$OUT/next.log" 2>&1 &
+  NEXT_PID=$!
+fi
 
 # SwiftShader : WebGL en rendu logiciel, seul moyen d'avoir du WebGL2 headless.
 # Les FPS mesurés ainsi n'ont aucune valeur — on ne mesure que des appels de
@@ -72,8 +78,9 @@ google-chrome --headless --no-sandbox --disable-gpu \
   --user-data-dir="$(mktemp -d)" about:blank > "$OUT/chrome.log" 2>&1 &
 CHROME_PID=$!
 
+BASE_URL="${TARGET:-http://localhost:$PORT}"
 for _ in $(seq 1 60); do
-  curl -sf "http://localhost:$PORT" -o /dev/null && break
+  curl -sf "$BASE_URL" -o /dev/null && break
   sleep 1
 done
 for _ in $(seq 1 30); do
@@ -82,13 +89,13 @@ for _ in $(seq 1 30); do
 done
 
 # Garde-fou : si le CSS ne se sert pas, on teste une page nue et tout est faux.
-css=$(curl -s "http://localhost:$PORT" | grep -oP '/_next/static/chunks/[^"]+\.css' | head -1)
-code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:$PORT$css")
+css=$(curl -s "$BASE_URL" | grep -oP '/_next/static/chunks/[^"]+\.css' | head -1)
+code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE_URL$css")
 if [ "$code" != "200" ]; then
   echo "ABANDON : le CSS répond $code — build incohérent, relancer 'npm run build'."
   exit 2
 fi
-echo "  next :$PORT · chrome :$CDP_PORT · CSS 200 · sorties dans $OUT"
+echo "  cible $BASE_URL · chrome :$CDP_PORT · CSS 200 · sorties dans $OUT"
 
-BASE="http://localhost:$PORT" OUT="$OUT" CDP_PORT="$CDP_PORT" \
+BASE="$BASE_URL" OUT="$OUT" CDP_PORT="$CDP_PORT" \
   node "$HERE/$CHECK"
