@@ -25,9 +25,9 @@ const EXPECTED = {
     ["C'est quoi Loup-Garou ?", "Un jeu communautaire de stratégie sur WhatsApp, avec des parties régulières et des éditions événementielles."],
   ],
   contactTitle: "On en parle sur WhatsApp ?",
-  meta: ["horaires : Lundi–Samedi · 8h–18h", "livraison : 3–5 jours ouvrés"],
-  wa1: { href: "https://wa.me/2290159100290", display: "+229 01 59 10 02 90" },
-  wa2: { href: "https://wa.me/2290169787127", display: "+229 01 69 78 71 27" },
+  meta: ["horaires : Lundi–Dimanche · 8h–22h", "livraison : 3–5 jours ouvrés"],
+  wa1: { href: "https://wa.me/2290169787127", display: "+229 01 69 78 71 27" },
+  wa2: { href: "https://wa.me/2290159100290", display: "+229 01 59 10 02 90" },
   group: "https://chat.whatsapp.com/EZwmZf6LCzQ5UYRhkg06OW",
   socials: ["Facebook", "Instagram", "Medium"],
 };

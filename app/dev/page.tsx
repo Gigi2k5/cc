@@ -7,6 +7,7 @@ import { Chip, SpecChip } from "@/components/ui/Chip";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { GradientText } from "@/components/ui/GradientText";
 import { TerminalKeyword, TerminalLine } from "@/components/ui/TerminalLine";
+import { WHATSAPP } from "@/lib/content";
 import { contrastRatio, wcagLevel } from "@/lib/contrast";
 
 /**
@@ -107,7 +108,7 @@ export default function DevPage() {
               <Button variant="ghost">Voir la FAQ</Button>
             </Row>
             <Row label="lien externe">
-              <Button href="https://wa.me/2290159100290">
+              <Button href={WHATSAPP.primary.href}>
                 WhatsApp (nouvel onglet)
               </Button>
               <Button href="#contact" variant="ghost">

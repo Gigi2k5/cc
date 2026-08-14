@@ -15,14 +15,15 @@ export const BRAND = {
 
 /** Liens WhatsApp réels. */
 export const WHATSAPP = {
+  /** `primary` reçoit tous les CTA « Parler à un conseiller / sur WhatsApp ». */
   primary: {
-    href: "https://wa.me/2290159100290",
-    display: "+229 01 59 10 02 90",
+    href: "https://wa.me/2290169787127",
+    display: "+229 01 69 78 71 27",
     label: "WhatsApp 1",
   },
   secondary: {
-    href: "https://wa.me/2290169787127",
-    display: "+229 01 69 78 71 27",
+    href: "https://wa.me/2290159100290",
+    display: "+229 01 59 10 02 90",
     label: "WhatsApp 2",
   },
   group: {
@@ -39,7 +40,7 @@ export const SOCIALS = [
   { name: "Medium", href: "#", icon: "medium" },
 ] as const;
 
-export const HOURS = "Lundi–Samedi · 8h–18h";
+export const HOURS = "Lundi–Dimanche · 8h–22h";
 export const DELIVERY = "livraison : 3–5 jours ouvrés";
 
 /** Sections ancrées, dans l'ordre du scroll. Pilote la nav et le scroll-spy. */
