@@ -119,7 +119,13 @@ check(
 
 /* ------------------------------------------------------------- SECTION */
 await evaluate(`document.getElementById("communaute").scrollIntoView({block:"center", behavior:"instant"})`);
-await sleep(1800);
+/* 3,5 s. C'est la plus longue cascade du site — 9 segments à 55 ms plus une
+   transition de 700 ms — et en rendu logiciel elle met bien plus que sa durée
+   nominale à se poser. Mesuré après la séquence complète de ce script (boucle
+   de continuité comprise, qui charge le CPU) : 1/9 mot opaque à 1,5 s, 9/9 à
+   2,5 s *tout juste*. Mesurer à 1,8 s ou à 2,5 s revient donc à jouer à pile
+   ou face selon la machine — d'où une seconde de marge franche. */
+await sleep(3500);
 
 const section = await evaluate(`(() => {
   const s = document.getElementById("communaute");

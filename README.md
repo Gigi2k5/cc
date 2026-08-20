@@ -31,7 +31,9 @@ npm run typecheck  # tsc --noEmit
 ### Vérifications automatisées
 
 Elles pilotent Chrome headless via CDP, **sans dépendance de test**, et
-nécessitent un `npm run build` préalable. Voir
+nécessitent un `npm run build` préalable. `run.sh` cherche seul un navigateur
+(`google-chrome`, `chromium`, ou une archive Chrome for Testing déposée dans
+`~/.local/opt/`) ; `CHROME=/chemin/vers/chrome` force un binaire précis. Voir
 [`tools/visual/README.md`](tools/visual/README.md) — notamment ce que le harnais
 **ne peut pas** mesurer.
 
@@ -160,18 +162,21 @@ redéployer, sinon le canonique continue de pointer vers l'URL Vercel.
 
 ## Budgets mesurés
 
-Relevés par `check:audit` sur le build de production, en octets transférés.
-**Ces chiffres datent d'avant la section Événements** : ils sont à relever de
-nouveau (l'affiche ajoute ~20 Ko en WebP, servie par `next/image`).
+Relevés par `check:audit` sur le build de production, en octets transférés,
+section Événements comprise.
 
 | Poste | Mesure | Budget |
 |---|---|---|
-| JS critique (bloque le 1er rendu) | 139 Ko | ≤ 180 Ko |
+| JS critique (bloque le 1er rendu) | 145 Ko | ≤ 180 Ko |
 | JS différé (scène 3D) | 363 Ko | hors chemin critique |
 | CSS | 9 Ko | ≤ 20 Ko |
 | Polices préchargées | 117 Ko | ≤ 140 Ko |
-| Total page | 682 Ko en 19 requêtes | < 800 Ko |
-| CLS | 0 | < 0,02 |
+| Total page | 692 Ko en 19 requêtes | < 800 Ko |
+| CLS | 0,003 | < 0,02 |
+
+L'affiche de la section Événements n'apparaît pas dans ces 19 requêtes : elle
+est sous la ligne de flottaison et chargée en différé. Servie par `next/image`,
+elle pèse 20 Ko en WebP contre 107 Ko à la source.
 
 Aucune requête vers un domaine tiers : polices auto-hébergées, carte
 d'environnement WebGL peinte localement, sprites dessinés sur canvas.
@@ -189,8 +194,8 @@ aucune violation. Deux exceptions assumées, arbitrées et documentées :
    par le WCAG 1.4.3. `check:audit` épingle cette exception : il échoue si une
    autre violation de contraste apparaît, ou si celle-ci sort du filigrane.
 
-Le reste est mesuré : parcours clavier complet avec anneau de focus sur chaque
-arrêt, hiérarchie de titres continue, repères sémantiques, cibles tactiles
+Le reste est mesuré : parcours clavier complet — 32 arrêts, anneau de focus sur
+chacun —, hiérarchie de titres continue, repères sémantiques, cibles tactiles
 ≥ 44 px, `prefers-reduced-motion` respecté partout.
 
 ## Points ouverts
@@ -222,3 +227,5 @@ arrêt, hiérarchie de titres continue, repères sémantiques, cibles tactiles
 - [x] Phase 7 — chorégraphie (magnétisme, spotlight, transitions de section)
 - [x] Phase 8 — perf, a11y, SEO, responsive, déploiement
 - [x] Phase 9 — section Événements (contenu daté, bascule automatique)
+
+Suite complète : **219/219 vérifications** sur les 10 scripts du harnais.

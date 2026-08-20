@@ -235,10 +235,10 @@ const rulesAfter = await evaluate(`(() => {
 })()`);
 check(
   "tous les filets se tracent au scroll",
-  rulesAfter.revealed === 4 && rulesAfter.transforms.every(t => t === "none" || t === "matrix(1, 0, 0, 1, 0, 0)"),
-  `${rulesAfter.revealed}/4 tracés`,
+  rulesAfter.revealed === 5 && rulesAfter.transforms.every(t => t === "none" || t === "matrix(1, 0, 0, 1, 0, 0)"),
+  `${rulesAfter.revealed}/5 tracés`,
 );
-check("filets purement décoratifs", rulesAfter.decorative, "aria-hidden sur les 4");
+check("filets purement décoratifs", rulesAfter.decorative, "aria-hidden sur les 5");
 
 /* --------------------------------------------------- ANIMATIONS RÉDUITES */
 await cdp.emulateReducedMotion(true);
@@ -311,7 +311,7 @@ check(
   mobile.heroCta.length === 2 && mobile.heroCta.every(p => p >= 99),
   mobile.heroCta.map(p => p + "%").join(" · "),
 );
-check("filets présents en mobile", mobile.rules === 4, `${mobile.rules}`);
+check("filets présents en mobile", mobile.rules === 5, `${mobile.rules}`);
 
 const failed = finish();
 cdp.close();

@@ -175,8 +175,20 @@ await shot("h-mobile");
 const mobile = await ev(`(() => {
   const c = document.querySelector("section canvas");
   const r = c?.getBoundingClientRect();
+  /* Le plafond de dpr dépend du palier d'appareil, pas du viewport : la scène
+     rend à 2 en « high » et à 1,5 en « low ». On recalcule ici le palier avec
+     la même règle que lib/hooks/useDeviceTier.ts, sinon l'assertion suppose un
+     palier que le harnais ne produit pas forcément. */
+  const nav = navigator;
+  const weak = (nav.hardwareConcurrency ?? 4) <= 4 ||
+               (nav.deviceMemory ?? 4) <= 4 ||
+               (matchMedia("(pointer: coarse)").matches && innerWidth < 1024);
   return {
     hasCanvas: !!c,
+    tier: weak ? "low" : "high",
+    cores: nav.hardwareConcurrency ?? null,
+    memory: nav.deviceMemory ?? null,
+    coarse: matchMedia("(pointer: coarse)").matches,
     ratio: c ? +(c.width / r.width).toFixed(2) : null,
     overflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     terminalFits: (() => {
@@ -186,7 +198,21 @@ const mobile = await ev(`(() => {
   };
 })()`);
 check("scène montée en mobile", mobile.hasCanvas, `canvas présent`);
-check("dpr mobile plafonné à 1,5", mobile.ratio !== null && mobile.ratio <= 1.51, `ratio ${mobile.ratio}`);
+/* Piège corrigé ici : le viewport mobile ne suffit pas à obtenir un palier
+   « low ». Le harnais force un pointeur FIN à tous les viewports (voir le
+   README de ce dossier), donc sur une machine confortable la sonde de
+   lib/hooks/useDeviceTier.ts conclut « high » — et la scène rend légitimement
+   à 2, pas à 1,5. L'assertion vérifiait donc une valeur qui ne dépendait pas
+   de ce qu'elle croyait mesurer : elle ne passait que sur une machine à ≤ 4
+   cœurs ou ≤ 4 Go. On vérifie désormais la vraie règle, quel que soit le
+   palier. Pour exercer réellement le chemin « low » :
+   POINTER=coarse bash tools/visual/run.sh checks/hero.mjs */
+const capAttendu = mobile.tier === "high" ? 2.01 : 1.51;
+check(
+  `dpr mobile plafonné à ${mobile.tier === "high" ? "2" : "1,5"} (palier ${mobile.tier})`,
+  mobile.ratio !== null && mobile.ratio <= capAttendu,
+  `ratio ${mobile.ratio} · ${mobile.cores} coeurs · ${mobile.memory} Go · pointeur grossier=${mobile.coarse}`,
+);
 check("aucun débordement horizontal", mobile.overflowX <= 0, `${mobile.overflowX}px de débordement`);
 check("la ligne terminal tient dans la largeur", mobile.terminalFits !== false, `${mobile.terminalFits}`);
 

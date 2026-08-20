@@ -3,9 +3,15 @@
 Pilote Chrome headless via le protocole CDP, avec le `WebSocket` natif de
 Node 22 — **aucune dépendance** (ni Puppeteer, ni Playwright).
 
-**Prérequis** : `google-chrome` doit être dans le `PATH`. Sans lui `run.sh`
-n'a rien à piloter et aucune vérification ne peut tourner — ce n'est pas un
-détail d'installation, c'est tout le filet de sécurité qui tombe.
+**Prérequis** : un navigateur de la famille Chrome. `run.sh` le cherche seul
+— `google-chrome`, `google-chrome-stable`, `chromium`, `chromium-browser`,
+puis `~/.local/opt/chrome-linux64/chrome` et `/opt/google/chrome/chrome` — et
+`CHROME=/chemin/vers/chrome` force un binaire précis. Sans navigateur il
+abandonne avec un message clair plutôt que d'échouer obscurément : ce n'est pas
+un détail d'installation, c'est tout le filet de sécurité qui tombe.
+
+Sans droits root, [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/)
+se déballe dans `~/.local/opt/` et `run.sh` le trouve tout seul.
 
 Sert à vérifier ce qu'une capture d'écran ne montre pas : scroll-spy, cycle
 d'ouverture d'un panneau, focus clavier, arrêt de la boucle de rendu WebGL,
@@ -80,6 +86,18 @@ logiciel, seul moyen d'obtenir WebGL2 sans écran. Conséquences :
   viewports, donc le viewport « mobile » du harnais rapporte quand même un
   pointeur fin. Tout ce qui doit être désactivé au doigt n'était donc jamais
   exercé. D'où `POINTER=coarse`, qui simule un écran tactile.
+- Le forçage du pointeur fin a une conséquence de plus, découverte en rejouant
+  la suite sur une machine confortable : `useDeviceTier` conclut **`high`** même
+  en viewport mobile (12 cœurs, 32 Go, pointeur fin), donc la scène rend
+  légitimement en dpr 2 et non 1,5. `check:hero` affirmait « dpr mobile plafonné
+  à 1,5 » sans le savoir : il ne passait que sur une machine à ≤ 4 cœurs ou
+  ≤ 4 Go. Il recalcule désormais le palier et vérifie le plafond correspondant ;
+  le vrai chemin « low » s'exerce avec `POINTER=coarse`.
+- Les états animés se posent **beaucoup** plus lentement qu'en nominal. La
+  cascade mot à mot de Communauté (9 segments, 700 ms de transition) n'atteint
+  l'opacité 1 qu'à ~2,5 s après la séquence complète du script. Mesurée à 1,8 s
+  puis à 2,5 s, elle tombait pile sur la ligne d'arrivée : l'attente est
+  passée à 3,5 s pour avoir une marge franche plutôt qu'un pile ou face.
 - `Input.dispatchKeyEvent` en `rawKeyDown` ne fait pas cliquer un `<button>` :
   il faut `keyDown` avec `text` (`\r` pour Entrée, espace pour Espace). Entrée
   déclenche le clic au keydown, Espace au keyup.

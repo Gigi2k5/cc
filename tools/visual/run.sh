@@ -50,6 +50,30 @@ else
   NEXT_PID=$!
 fi
 
+# Le binaire n'est plus supposé présent sous un seul nom : Chrome peut être
+# installé par le système, ou déposé à la main (Chrome for Testing, qui ne
+# demande pas les droits root). CHROME force un chemin explicite.
+CHROME_BIN="${CHROME:-}"
+if [ -z "$CHROME_BIN" ]; then
+  for candidate in google-chrome google-chrome-stable chromium chromium-browser \
+                   "$HOME/.local/opt/chrome-linux64/chrome" \
+                   /opt/google/chrome/chrome; do
+    if command -v "$candidate" > /dev/null 2>&1; then
+      CHROME_BIN="$(command -v "$candidate")"
+      break
+    elif [ -x "$candidate" ]; then
+      CHROME_BIN="$candidate"
+      break
+    fi
+  done
+fi
+if [ -z "$CHROME_BIN" ]; then
+  echo "ABANDON : aucun navigateur Chrome trouvé. Sans lui le harnais n'a rien"
+  echo "          à piloter. Installer Chrome, ou pointer CHROME=/chemin/vers/chrome."
+  exit 2
+fi
+echo "  navigateur : $CHROME_BIN"
+
 # SwiftShader : WebGL en rendu logiciel, seul moyen d'avoir du WebGL2 headless.
 # Les FPS mesurés ainsi n'ont aucune valeur — on ne mesure que des appels de
 # dessin et des états du DOM.
@@ -71,7 +95,7 @@ else
   BLINK="primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4"
 fi
 
-google-chrome --headless --no-sandbox --disable-gpu \
+"$CHROME_BIN" --headless --no-sandbox --disable-gpu \
   --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader \
   --blink-settings="$BLINK" \
   --remote-debugging-port="$CDP_PORT" --remote-allow-origins='*' \
