@@ -46,14 +46,20 @@ export function AlertBar() {
       >
         <span aria-hidden="true" className="alert-dot shrink-0" />
 
-        <span aria-hidden="true" className="flex min-w-0 items-center gap-2.5 font-mono text-[0.6875rem] tracking-[0.14em] uppercase sm:gap-3.5 sm:text-xs sm:tracking-[0.16em]">
-          <span className="shrink-0 rounded-sm bg-encre px-2 py-1 text-craie">
+        <span
+          aria-hidden="true"
+          className="flex min-w-0 items-center gap-2 font-mono text-[0.625rem] tracking-[0.1em] uppercase sm:gap-3.5 sm:text-xs sm:tracking-[0.16em]"
+        >
+          <span className="shrink-0 rounded-sm bg-encre px-1.5 py-0.5 text-craie sm:px-2 sm:py-1">
             [ {event.dateShort} ]
           </span>
-          {/* Deux formes plutôt qu'une troncature : « 3E ÉDITI… » se lit
-              comme un bug, pas comme une abréviation. */}
-          <span className="whitespace-nowrap sm:hidden">{event.alertTitleShort}</span>
-          <span className="hidden whitespace-nowrap sm:inline">{event.alertTitle}</span>
+          {/* `min-w-0` + `truncate` : en flex, un texte `nowrap` qui ne rentre
+              pas ne se coupe pas — il DÉBORDE par-dessus ses voisins. C'est ce
+              qui se produisait à 320 et 360 px, où « J−16 » venait se poser sur
+              « 3E ÉDITION ». Les tailles ci-dessus suffisent à ce que ça tienne
+              partout ; la troncature n'est que le filet de sécurité. */}
+          <span className="min-w-0 truncate sm:hidden">{event.alertTitleShort}</span>
+          <span className="hidden min-w-0 truncate sm:inline">{event.alertTitle}</span>
           <span aria-hidden="true" className="hidden shrink-0 text-encre/45 sm:inline">
             ·
           </span>
@@ -62,17 +68,17 @@ export function AlertBar() {
           </span>
         </span>
 
-        <span aria-hidden="true" className="ml-auto flex shrink-0 items-center gap-3 sm:gap-5">
+        <span aria-hidden="true" className="ml-auto flex shrink-0 items-center gap-2.5 sm:gap-5">
           {/* Le compte à rebours reste visible même sur le plus petit écran :
               c'est lui qui crée l'urgence. */}
-          <span className="font-mono text-[0.6875rem] font-medium tracking-[0.16em] sm:text-xs">
+          <span className="font-mono text-[0.625rem] font-medium tracking-[0.1em] sm:text-xs sm:tracking-[0.16em]">
             {countdown}
           </span>
-          <span className="flex items-center gap-1.5 rounded-pill bg-accent-grad px-3.5 py-1.5 font-sans text-[0.75rem] font-semibold text-white sm:px-4 sm:py-2 sm:text-[0.8125rem]">
+          <span className="flex items-center gap-1.5 rounded-pill bg-accent-grad px-3 py-1.5 font-sans text-[0.6875rem] font-semibold text-white sm:px-4 sm:py-2 sm:text-[0.8125rem]">
             {ALERTE.cta}
             <span
               aria-hidden="true"
-              className="transition-transform duration-[var(--duration-standard)] ease-standard group-hover:translate-x-0.5"
+              className="hidden transition-transform duration-[var(--duration-standard)] ease-standard group-hover:translate-x-0.5 sm:inline"
             >
               →
             </span>

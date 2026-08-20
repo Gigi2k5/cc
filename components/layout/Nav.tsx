@@ -189,7 +189,10 @@ export function Nav({
         aria-label="Menu"
         aria-hidden={!open}
         className={cn(
-          "fixed inset-0 z-40 flex flex-col justify-between bg-encre pt-[var(--nav-h)] lg:hidden",
+          /* La nav n'est plus collée en haut : la bande d'annonce la précède.
+             Le panneau doit donc réserver les deux, sinon son premier lien
+             passe sous l'en-tête. */
+          "fixed inset-0 z-40 flex flex-col justify-between bg-encre pt-[calc(var(--nav-h)+var(--alert-h))] lg:hidden",
           "transition-opacity duration-[var(--duration-standard)] ease-standard",
           open ? "visible opacity-100" : "invisible opacity-0",
         )}

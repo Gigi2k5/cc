@@ -173,6 +173,19 @@ check(
 );
 check("scroll du body verrouillé", opened.bodyOverflow === "hidden", `overflow=${opened.bodyOverflow}`);
 check("focus déplacé sur le premier lien", opened.focused === "À propos", `focus=${opened.focused}`);
+/* La bande d'annonce précède la nav : le panneau doit réserver les deux
+   hauteurs, sinon son premier lien passe sous l'en-tête (8 px de recouvrement
+   la première fois). */
+const chevauche = await evaluate(`(() => {
+  const header = document.querySelector("header").getBoundingClientRect();
+  const premier = document.getElementById("nav-panel").querySelector("a").getBoundingClientRect();
+  return { premier: Math.round(premier.top), header: Math.round(header.bottom) };
+})()`);
+check(
+  "le panneau commence sous l'en-tête, bande comprise",
+  chevauche.premier >= chevauche.header,
+  `1er lien à ${chevauche.premier}px · bas de l'en-tête à ${chevauche.header}px`,
+);
 check(
   "sémantique de dialogue",
   opened.role === "dialog" && opened.modal === "true",

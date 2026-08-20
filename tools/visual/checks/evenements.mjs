@@ -44,7 +44,7 @@ const EXPECTED = {
   ticketLabel: "Réserver ta place",
   /* Le dispositif « voyant » : bande d'annonce, bloc hero, pastille de nav. */
   alerte: "[ 05.09 ] 3E ÉDITION PRÉSENTIEL · 25 PLACES J−16 Réserver →",
-  alerteMobile: "[ 05.09 ] 3E ÉDITION J−16 Réserver →",
+  alerteMobile: "[ 05.09 ] 3E ÉDITION J−16 Réserver",
   alerteNom:
     "Prochaine édition : 3ᵉ édition présentiel, samedi 5 septembre · 25 places · 2 000 FCFA, dans 16 jours. Réserver.",
   stripNom:

@@ -119,13 +119,22 @@ check(
 
 /* ------------------------------------------------------------- SECTION */
 await evaluate(`document.getElementById("communaute").scrollIntoView({block:"center", behavior:"instant"})`);
-/* 3,5 s. C'est la plus longue cascade du site — 9 segments à 55 ms plus une
-   transition de 700 ms — et en rendu logiciel elle met bien plus que sa durée
-   nominale à se poser. Mesuré après la séquence complète de ce script (boucle
-   de continuité comprise, qui charge le CPU) : 1/9 mot opaque à 1,5 s, 9/9 à
-   2,5 s *tout juste*. Mesurer à 1,8 s ou à 2,5 s revient donc à jouer à pile
-   ou face selon la machine — d'où une seconde de marge franche. */
-await sleep(3500);
+/* On ATTEND que la cascade soit posée au lieu de parier sur une durée.
+   C'est la plus longue du site — 9 segments à 55 ms plus 700 ms de transition
+   — et en rendu logiciel elle met bien plus que sa durée nominale : mesurée
+   entre 2,5 s et plus de 3,5 s selon la charge de la machine. Toute constante
+   choisie ici finit par tomber du mauvais côté un jour ; l'attente active,
+   elle, ne dépend plus de la machine. */
+const cascade = await evaluate(`(async () => {
+  const mots = () => [...document.getElementById("communaute-title").querySelectorAll(".reveal")];
+  const posee = () => mots().every(w => Number(getComputedStyle(w).opacity) > 0.99);
+  const t0 = Date.now();
+  while (!posee() && Date.now() - t0 < 10000) {
+    await new Promise(r => setTimeout(r, 150));
+  }
+  return Date.now() - t0;
+})()`);
+await sleep(400);
 
 const section = await evaluate(`(() => {
   const s = document.getElementById("communaute");
@@ -184,7 +193,7 @@ check("découpage en mots masqué aux lecteurs d'écran", section.innerHidden ==
 check(
   "révélation mot à mot, échelonnée",
   section.wordCount >= 9 && new Set(section.wordDelays).size > 1 && section.wordsRevealed,
-  `${section.wordCount} segments · délais ${section.wordDelays.join(" ")}`,
+  `${section.wordCount} segments · délais ${section.wordDelays.join(" ")} · posée en ${cascade} ms`,
 );
 check("« un univers » en italique dégradé", section.italicAccent, "<em> présent");
 check("paragraphe exact", section.body === EXPECTED.body, section.body?.slice(0, 55) + "…");
