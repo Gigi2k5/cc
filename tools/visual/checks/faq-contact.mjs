@@ -263,9 +263,12 @@ check(
   links.unsafe.length === 0,
   `${links.externalCount} externes · ${links.unsafe.length} à risque`,
 );
+/* Le site n'envoie ailleurs que vers WhatsApp et vers la billetterie de la
+   section Événements. Toute autre destination est un accident : cette
+   assertion est là pour le voir tout de suite. */
 check(
-  "aucun lien externe autre que WhatsApp",
-  links.hrefs.every((h) => /wa\.me|chat\.whatsapp/.test(h)),
+  "aucune sortie du site hors WhatsApp et billetterie",
+  links.hrefs.every((h) => /wa\.me|chat\.whatsapp|tike229\.ghinel\.com/.test(h)),
   links.hrefs.join(" "),
 );
 check(

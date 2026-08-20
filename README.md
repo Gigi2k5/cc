@@ -41,6 +41,7 @@ npm run check:shell       # nav sticky, scroll-spy, panneau mobile, footer
 npm run check:hero        # scène 3D : draws, arrêt hors écran, reduced-motion
 npm run check:content     # fidélité de la copie au brief, révélations, survols
 npm run check:community   # section Communauté + couche réseau globale
+npm run check:evenements  # section Événements : copie, affiche, données structurées
 npm run check:faq         # accordéon au clavier, contact, tous les liens
 npm run check:motion      # magnétisme, spotlight, filets, cohérence motion.ts/CSS
 npm run check:touch       # ce qui doit être désactivé au doigt
@@ -63,11 +64,12 @@ app/
 components/
   layout/         Section · Container · Nav · Footer · SectionRule
   ui/             primitives du design system
-  sections/       les 9 sections de la page
+  sections/       les 10 sections de la page
   three/          scène du hero, couche réseau, repli CSS
 lib/
   content.ts      TOUTE la copie française et les liens réels
   fonts.ts · motion.ts · site.ts · contrast.ts · utils.ts
+  evenements.ts   sélection des éditions à venir (la seule logique datée)
   hooks/          scroll-spy, révélation, capacité de l'appareil, pointeur…
 references/       design system + maquette validée (lecture seule)
 tools/visual/     harnais de vérification CDP
@@ -83,6 +85,38 @@ la fois comme utilitaires Tailwind (`bg-encre`, `rounded-lg`, `font-display`,
 `max-w-page`) et comme variables CSS (`var(--color-encre)`) pour la scène WebGL.
 `lib/motion.ts` en est le miroir JS, et `check:motion` vérifie qu'ils ne
 dérivent pas.
+
+## Événements
+
+C'est le **seul contenu daté du site**, et donc le seul qui puisse vieillir mal.
+
+Une édition vit dans `EVENEMENTS.items` (`lib/content.ts`) avec deux bornes
+ISO, `start` et `end`. `lib/evenements.ts` ne retient que celles dont la fin
+est encore devant, la plus proche d'abord ; `app/page.tsx` porte
+`export const revalidate = 3600`. Conséquence : **le lendemain d'une soirée,
+l'annonce disparaît d'elle-même dans l'heure, sans que personne ne
+redéploie**, et la section bascule sur son état de repli — jamais un trou dans
+la page, toujours un renvoi vers le groupe WhatsApp.
+
+Ajouter une édition = ajouter une entrée dans `items`. Rien d'autre.
+
+Trois règles à ne pas perdre de vue :
+
+- **§11 du design system.** Loup-Garou reste cadré comme jeu communautaire. Les
+  jetons sont *inclus* dans l'entrée : aucune mention de crédits à recharger,
+  de mise ou de gain en argent sur le site public. `check:evenements` échoue si
+  un de ces mots réapparaît dans la section.
+- **Le lieu n'est pas public** — position assumée (« communiqué aux inscrits »),
+  pas un oubli. Les données structurées ne déclarent donc que le pays, jamais
+  une adresse inventée.
+- **La billetterie est un domaine tiers** (`tike229.ghinel.com`). Elle est
+  annoncée en clair sous les boutons plutôt que découverte au clic, et c'est
+  la seule sortie du site hors WhatsApp — `check:faq` le vérifie.
+
+L'affiche est traitée comme un **objet posé** dans un cadre à filet fin, jamais
+comme un fond : sa palette (dorés, rouge saturé) ne doit pas déborder sur celle
+du site. Toute l'information qu'elle porte existe aussi en texte réel, pour les
+lecteurs d'écran comme pour les moteurs.
 
 ## Déploiement (Vercel)
 
@@ -126,7 +160,9 @@ redéployer, sinon le canonique continue de pointer vers l'URL Vercel.
 
 ## Budgets mesurés
 
-Relevés par `check:audit` sur le build de production, en octets transférés :
+Relevés par `check:audit` sur le build de production, en octets transférés.
+**Ces chiffres datent d'avant la section Événements** : ils sont à relever de
+nouveau (l'affiche ajoute ~20 Ko en WebP, servie par `next/image`).
 
 | Poste | Mesure | Budget |
 |---|---|---|
@@ -164,6 +200,13 @@ arrêt, hiérarchie de titres continue, repères sémantiques, cibles tactiles
 - **Domaine définitif** — voir `NEXT_PUBLIC_SITE_URL` ci-dessus.
 - **Images produit** — le site n'en utilise aucune pour l'instant ; prévoir
   `next/image` si des visuels de PC sont ajoutés.
+- **Nav à 1024 px** — la nav porte désormais six liens. La gouttière a été
+  resserrée entre 1024 et 1280 px et le suffixe `[ C//C — BÉNIN ]` n'apparaît
+  qu'à partir de 1280 px pour faire de la place. À contrôler à l'œil : ça n'a
+  pas pu être mesuré (voir ci-dessous).
+- **Harnais non rejoué** — les vérifications exigent `google-chrome` dans le
+  PATH, absent de la machine où la section a été écrite. Elles ont été mises à
+  jour mais **pas exécutées** : à relancer entièrement avant mise en ligne.
 - **Fps réels** — le harnais tourne en WebGL logiciel et ne peut pas les
   mesurer. À contrôler sur machine et sur téléphone avant mise en production.
 
@@ -178,3 +221,4 @@ arrêt, hiérarchie de titres continue, repères sémantiques, cibles tactiles
 - [x] Phase 6 — FAQ (accordéon accessible) + contact (liens WhatsApp réels)
 - [x] Phase 7 — chorégraphie (magnétisme, spotlight, transitions de section)
 - [x] Phase 8 — perf, a11y, SEO, responsive, déploiement
+- [x] Phase 9 — section Événements (contenu daté, bascule automatique)

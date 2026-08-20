@@ -48,7 +48,7 @@ check(
 );
 
 /* ------------------------------------------------------------- SCROLL-SPY */
-const ids = ["a-propos", "ce-quon-fait", "communaute", "faq", "contact"];
+const ids = ["a-propos", "ce-quon-fait", "communaute", "evenements", "faq", "contact"];
 const spy = [];
 for (const target of ids) {
   await evaluate(`(() => {
@@ -67,7 +67,7 @@ for (const target of ids) {
 }
 const spyOk = spy.every((s) => s.current === `#${s.target}`);
 check(
-  "scroll-spy : la bonne ancre est active pour les 5 sections",
+  "scroll-spy : la bonne ancre est active pour les 6 sections",
   spyOk,
   spy.map((s) => `${s.target}→${s.current}`).join("  "),
 );

@@ -4,7 +4,11 @@ import { cn } from "@/lib/utils";
 import { GradientText } from "./GradientText";
 
 type WordmarkProps = {
-  /** Show the `[ C//C — BÉNIN ]` machine suffix (nav only). */
+  /**
+   * Show the `[ C//C — BÉNIN ]` machine suffix (nav only).
+   * Visible à partir de `xl` seulement : entre 1024 et 1280 la nav porte six
+   * liens et un CTA, et ce suffixe est ce qui se sacrifie le mieux.
+   */
   withTag?: boolean;
   className?: string;
 };
@@ -20,7 +24,7 @@ export function Wordmark({ withTag = false, className }: WordmarkProps) {
         {BRAND.name} <GradientText>{BRAND.nameAccent}</GradientText>
       </span>
       {withTag ? (
-        <span className="hidden font-mono text-[0.625rem] tracking-[0.14em] text-gris-faible lg:inline">
+        <span className="hidden font-mono text-[0.625rem] tracking-[0.14em] text-gris-faible xl:inline">
           {BRAND.tag}
         </span>
       ) : null}

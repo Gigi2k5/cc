@@ -104,7 +104,9 @@ export function Nav() {
             <Wordmark withTag />
           </a>
 
-          <ul className="hidden items-center gap-9 lg:flex">
+          {/* Gouttière resserrée entre 1024 et 1280 : six liens + le CTA y tiennent
+                juste. Au-delà, on retrouve le rythme de la maquette. */}
+          <ul className="hidden items-center gap-6 lg:flex xl:gap-9">
             {NAV_LINKS.map((link) => {
               const isActive = active === link.id;
               return (
@@ -113,7 +115,7 @@ export function Nav() {
                     href={`#${link.id}`}
                     aria-current={isActive ? "true" : undefined}
                     className={cn(
-                      "relative block py-2 text-sm transition-colors",
+                      "relative block py-2 text-sm whitespace-nowrap transition-colors",
                       "duration-[var(--duration-micro)] ease-micro",
                       isActive ? "text-craie" : "text-gris hover:text-craie",
                     )}

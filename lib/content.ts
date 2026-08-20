@@ -48,6 +48,7 @@ export const NAV_LINKS = [
   { id: "a-propos", label: "À propos" },
   { id: "ce-quon-fait", label: "Ce qu'on fait" },
   { id: "communaute", label: "Communauté" },
+  { id: "evenements", label: "Événements" },
   { id: "faq", label: "FAQ" },
   { id: "contact", label: "Contact" },
 ] as const;
@@ -196,6 +197,123 @@ export const COMMUNAUTE = {
   ],
 } as const;
 
+/* --------------------------------------------------------------------------
+   Événements — le seul contenu daté du site.
+   
+   `end` est la borne qui compte : la section retire d'elle-même une édition
+   dès qu'elle est passée (voir Evenements.tsx), et la page est revalidée
+   toutes les heures. Personne n'a donc à redéployer le lendemain d'une
+   soirée. Ajouter une édition = ajouter une entrée dans `items`.
+   
+   Fuseau du Bénin : UTC+1 toute l'année, sans heure d'été.
+   
+   ⚠️ §11 du design system — Loup-Garou reste cadré comme jeu communautaire.
+   Les jetons sont *inclus* dans l'entrée : ni crédits à recharger, ni mise,
+   ni retrait en argent, ici comme ailleurs sur le site public.
+   -------------------------------------------------------------------------- */
+
+export type EvenementSpec = {
+  label: string;
+  value: string;
+  /** Présent sur une plage : rendu « value → to ». */
+  to?: string;
+};
+
+export type Evenement = {
+  slug: string;
+  /** Nom complet, réservé aux données structurées. */
+  seoName: string;
+  badge: string;
+  titleBefore: string;
+  titleAccent: string;
+  titleAfter: string;
+  lead: string;
+  /** ISO 8601. `end` décide de la disparition de l'annonce. */
+  start: string;
+  end: string;
+  watermark: string;
+  specs: readonly EvenementSpec[];
+  price: {
+    label: string;
+    amount: string;
+    currency: string;
+    /** Pour les données structurées uniquement. */
+    value: number;
+    code: string;
+  };
+  programme: readonly string[];
+  ticket: { href: string; label: string; host: string };
+  poster: {
+    src: string;
+    alt: string;
+    width: number;
+    height: number;
+    caption: string;
+  };
+};
+
+export const EVENEMENTS = {
+  eyebrow: "Événements",
+  title: "Ce qui se passe bientôt.",
+  /** Le lieu n'est pas public : position assumée, pas un oubli. */
+  place: "Lieu communiqué aux inscrits",
+  secondaryCta: "Une question ? WhatsApp",
+  ticketPrefix: "billetterie :",
+  /** Affiché quand plus aucune édition n'est à venir — jamais une section vide. */
+  empty: {
+    title: "La prochaine édition se prépare.",
+    body: "Les prochaines éditions s'annoncent d'abord dans le groupe WhatsApp.",
+  },
+  items: [
+    {
+      slug: "edition-3-presentiel",
+      seoName: "Comlan Community — 3e édition présentiel",
+      badge: "[ 3E ÉDITION · PRÉSENTIEL ]",
+      titleBefore: "Le 5 septembre, on joue",
+      titleAccent: "autrement",
+      titleAfter: ".",
+      lead: "Une soirée pensée pour durer jusqu'à minuit.",
+      start: "2026-09-05T15:00:00+01:00",
+      end: "2026-09-06T00:00:00+01:00",
+      watermark: "05.09.2026",
+      specs: [
+        { label: "[ DATE ]", value: "samedi 5 septembre 2026" },
+        { label: "[ HORAIRE ]", value: "15h00", to: "00h00" },
+        { label: "[ LIEU ]", value: "communiqué aux inscrits" },
+        { label: "[ PLACES ]", value: "25" },
+      ],
+      price: {
+        label: "[ ENTRÉE ]",
+        amount: "2 000",
+        currency: "FCFA",
+        value: 2000,
+        code: "XOF",
+      },
+      programme: [
+        "Loup-Garou",
+        "Pocket Poker",
+        "Jeux d'ambiance",
+        "Cocktail de bienvenue",
+        "Jetons de jeu inclus",
+        "Afrobeats & Amapiano",
+        "Coin photo",
+      ],
+      ticket: {
+        href: "https://tike229.ghinel.com/",
+        label: "Réserver ta place",
+        host: "tike229.ghinel.com",
+      },
+      poster: {
+        src: "/evenements/edition-3-presentiel.jpg",
+        alt: "Affiche de la 3e édition présentiel de Comlan Community : samedi 5 septembre 2026, de 15h à minuit, entrée 2 000 FCFA, 25 places disponibles.",
+        width: 864,
+        height: 1080,
+        caption: "affiche officielle · 3e édition",
+      },
+    },
+  ] satisfies readonly Evenement[],
+} as const;
+
 export const FAQ = {
   eyebrow: "FAQ",
   title: "Les questions qu'on nous pose.",
@@ -266,7 +384,7 @@ export const FOOTER_COLUMNS = [
     links: [
       { label: "Groupe WhatsApp", href: WHATSAPP.group.href },
       { label: "Loup-Garou", href: "#communaute" },
-      { label: "Événements", href: "#communaute" },
+      { label: "Événements", href: "#evenements" },
     ],
   },
 ] as const;

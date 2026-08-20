@@ -3,6 +3,10 @@
 Pilote Chrome headless via le protocole CDP, avec le `WebSocket` natif de
 Node 22 — **aucune dépendance** (ni Puppeteer, ni Playwright).
 
+**Prérequis** : `google-chrome` doit être dans le `PATH`. Sans lui `run.sh`
+n'a rien à piloter et aucune vérification ne peut tourner — ce n'est pas un
+détail d'installation, c'est tout le filet de sécurité qui tombe.
+
 Sert à vérifier ce qu'une capture d'écran ne montre pas : scroll-spy, cycle
 d'ouverture d'un panneau, focus clavier, arrêt de la boucle de rendu WebGL,
 états `prefers-reduced-motion`.
@@ -15,6 +19,7 @@ bash tools/visual/run.sh checks/shell.mjs   # nav, panneau mobile, footer
 bash tools/visual/run.sh checks/hero.mjs    # scène 3D du hero
 bash tools/visual/run.sh checks/content.mjs # fidélité de la copie, révélations, survols
 bash tools/visual/run.sh checks/community.mjs # section Communauté + couche réseau
+bash tools/visual/run.sh checks/evenements.mjs # section Événements
 bash tools/visual/run.sh checks/faq-contact.mjs # accordéon FAQ au clavier + contact + liens
 bash tools/visual/run.sh checks/motion.mjs  # magnétisme, spotlight, filets de section
 bash tools/visual/run.sh checks/audit.mjs   # charge utile, axe-core, sémantique, clavier, SEO

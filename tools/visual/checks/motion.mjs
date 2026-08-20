@@ -209,7 +209,7 @@ const rulesBefore = await evaluate(`(() => {
     duration: rules.length ? getComputedStyle(rules[0]).transitionDuration : null,
   };
 })()`);
-check("4 filets de transition entre les sections", rulesBefore.count === 4, `${rulesBefore.count}`);
+check("5 filets de transition entre les sections", rulesBefore.count === 5, `${rulesBefore.count}`);
 check(
   "filets non tracés avant d'entrer dans le cadre",
   rulesBefore.untouched === rulesBefore.count &&
