@@ -73,12 +73,26 @@
   /* Hauteur de la nav sticky — décale les ancres au scroll et sert
      d'offset au scroll-spy, qui lit ce token à l'exécution. */
   --nav-h: 64px;
+
+  /* Hauteur de la bande d'annonce. Zéro par défaut : quand aucune édition
+     n'est à venir la bande n'existe pas, et le hero retrouve exactement la
+     hauteur qu'il avait avant qu'elle existe. C'est le layout qui bascule
+     data-alert sur le body. */
+  --alert-h: 0px;
+}
+
+body[data-alert="on"] {
+  --alert-h: 48px;
 }
 
 @media (width >= 64rem) {
   :root {
     --gutter: 40px;
     --nav-h: 76px;
+  }
+
+  body[data-alert="on"] {
+    --alert-h: 56px;
   }
 }
 
@@ -153,7 +167,8 @@
        Même couche + sélecteur plus spécifique = cette règle gagne (les
        déclarations !important inversent l'ordre des couches, on reste donc
        volontairement dans @layer base). */
-    .terminal-caret {
+    .terminal-caret,
+    .alert-dot {
       animation: none !important;
       opacity: 1 !important;
     }
@@ -183,6 +198,31 @@
 /* Bordure fine standard sur verre dépoli (§6). */
 @utility border-verre {
   border-color: rgb(255 255 255 / 0.08);
+}
+
+/* Pastille de la bande d'annonce : un point rouge et son onde. C'est le seul
+   mouvement de la bande — du texte qui défile obligerait à fournir un bouton
+   pause (WCAG 2.2.2) et affaiblirait l'ensemble. */
+@keyframes dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(250 21 0 / 0.55);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 9px rgb(250 21 0 / 0);
+  }
+}
+
+/* Halo qui respire sous le bloc événement du hero. Lent : on veut attirer
+   l'œil, pas clignoter. */
+@keyframes glow-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(250 21 0 / 0);
+  }
+  50% {
+    box-shadow: 0 0 34px 0 rgb(250 21 0 / 0.22);
+  }
 }
 
 @keyframes caret-blink {
@@ -358,6 +398,19 @@
     vertical-align: -0.15em;
     background-color: var(--color-rouge);
     animation: caret-blink 1.1s steps(1) infinite;
+  }
+
+  .alert-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-rouge);
+    animation: dot-pulse 2.2s ease-out infinite;
+  }
+
+  .glow-breathe {
+    animation: glow-breathe 3.6s var(--ease-standard) infinite;
   }
 
   /* Grain global (~4,5 %) posé sur l'encre pour casser le plat (§6). */

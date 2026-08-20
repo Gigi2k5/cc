@@ -9,6 +9,8 @@ type GradientTextProps = {
   className?: string;
   /** Carries cascade variables such as `--rise-delay`. */
   style?: CSSProperties;
+  /** Le mot est purement visuel : son sens est porté ailleurs. */
+  "aria-hidden"?: boolean;
 };
 
 /**
@@ -24,19 +26,20 @@ export function GradientText({
   as = "span",
   className,
   style,
+  "aria-hidden": ariaHidden,
 }: GradientTextProps) {
   const classes = cn("text-accent-grad", className);
 
   if (as === "em") {
     return (
-      <em className={classes} style={style}>
+      <em className={classes} style={style} aria-hidden={ariaHidden}>
         {children}
       </em>
     );
   }
 
   return (
-    <span className={classes} style={style}>
+    <span className={classes} style={style} aria-hidden={ariaHidden}>
       {children}
     </span>
   );

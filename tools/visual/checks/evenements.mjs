@@ -42,11 +42,65 @@ const EXPECTED = {
   ],
   ticket: "https://tike229.ghinel.com/",
   ticketLabel: "Réserver ta place",
+  /* Le dispositif « voyant » : bande d'annonce, bloc hero, pastille de nav. */
+  alerte: "[ 05.09 ] 3E ÉDITION PRÉSENTIEL · 25 PLACES J−16 Réserver →",
+  alerteMobile: "[ 05.09 ] 3E ÉDITION J−16 Réserver →",
+  alerteNom:
+    "Prochaine édition : 3ᵉ édition présentiel, samedi 5 septembre · 25 places · 2 000 FCFA, dans 16 jours. Réserver.",
+  stripNom:
+    "Prochaine édition : 3ᵉ édition présentiel, samedi 5 septembre · 25 places · 2 000 FCFA, dans 16 jours.",
 };
 
 await cdp.viewport({ width: 1440, height: 900 });
 await cdp.goto(BASE);
 await sleep(2500);
+
+/* Capturé avant tout scroll : la bande n'est pas collante, elle défile avec la
+   page — la mesurer après aurait donné un top négatif. */
+const alerte = await evaluate(`(() => {
+  const bar = document.querySelector("aside");
+  if (!bar) return null;
+  /* Texte réellement AFFICHÉ : la bande porte deux formes du titre, dont une
+     masquée selon la largeur. textContent les prendrait toutes les deux. */
+  const visible = (root) => {
+    const out = [];
+    const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let n;
+    while ((n = walk.nextNode())) {
+      const el = n.parentElement;
+      if (!el || el.offsetParent === null) continue;
+      const t = n.textContent.trim();
+      if (t) out.push(t);
+    }
+    return out.join(" ");
+  };
+  const link = bar.querySelector("a");
+  const b = bar.getBoundingClientRect();
+  const cs = getComputedStyle(bar);
+  const dot = bar.querySelector(".alert-dot");
+  const strip = document.querySelector('main section a[href*="tike229"]');
+  return {
+    visible: visible(bar),
+    nomAccessible: link?.getAttribute("aria-label"),
+    top: Math.round(b.top + window.scrollY),
+    hauteur: Math.round(b.height),
+    token: getComputedStyle(document.body).getPropertyValue("--alert-h").trim(),
+    fond: cs.backgroundColor,
+    couleur: cs.color,
+    repere: bar.tagName + "/" + bar.getAttribute("aria-label"),
+    href: link?.getAttribute("href"),
+    target: link?.getAttribute("target"),
+    rel: link?.getAttribute("rel"),
+    cibleH: link ? Math.round(link.getBoundingClientRect().height) : 0,
+    liens: bar.querySelectorAll("a").length,
+    dotAnim: dot ? getComputedStyle(dot).animationName : null,
+    dotCache: dot ? dot.getAttribute("aria-hidden") : null,
+    navDot: !!document.querySelector("header ul .alert-dot"),
+    stripVisible: strip ? getComputedStyle(strip).display !== "none" : false,
+    stripNom: strip?.getAttribute("aria-label"),
+    stripVisibleTexte: strip ? visible(strip) : null,
+  };
+})()`);
 
 await evaluate(
   `document.getElementById("evenements").scrollIntoView({block:"start", behavior:"instant"}); scrollBy(0, -120);`,
@@ -188,6 +242,54 @@ check(
   ld ? JSON.stringify(ld.location?.address) : "—",
 );
 
+/* ============================================ DISPOSITIF D'ANNONCE (haut de page)
+   La section ne sert à rien si personne ne descend jusqu'à elle : ce qui suit
+   vérifie ce qu'on voit SANS scroller. */
+check("bande d'annonce en tout premier, avant le logo", alerte && alerte.top === 0,
+  alerte ? `offset ${alerte.top}px · ${alerte.hauteur}px de haut` : "absente");
+check(
+  "hauteur de bande = token --alert-h (le hero se réserve la place)",
+  alerte && `${alerte.hauteur}px` === alerte.token,
+  `${alerte?.hauteur}px vs ${alerte?.token}`,
+);
+check(
+  "inversion craie sur encre — le levier est le contraste, pas un aplat rouge",
+  alerte && alerte.fond === "rgb(245, 243, 239)" && alerte.couleur === "rgb(8, 8, 8)",
+  `fond=${alerte?.fond} texte=${alerte?.couleur}`,
+);
+check("la bande est un repère nommé", alerte && alerte.repere === "ASIDE/Prochaine édition", alerte?.repere);
+check(
+  "un seul lien, sur toute la bande : une tabulation, pleine cible tactile",
+  alerte && alerte.liens === 1 && alerte.cibleH === alerte.hauteur && alerte.cibleH >= 44,
+  `${alerte?.liens} lien · cible ${alerte?.cibleH}px`,
+);
+check(
+  "la bande mène à la billetterie en nouvel onglet sûr",
+  alerte && alerte.href === EXPECTED.ticket && alerte.target === "_blank" && alerte.rel === "noopener noreferrer",
+  `${alerte?.href} (${alerte?.rel})`,
+);
+check("texte affiché de la bande, au mot près", alerte && alerte.visible === EXPECTED.alerte, alerte?.visible);
+/* La bande porte deux formes du titre, dont une masquée : sans nom accessible
+   explicite, le titre serait annoncé deux fois de suite. */
+check(
+  "nom accessible unique, sans doublon et en langage parlé",
+  alerte && alerte.nomAccessible === EXPECTED.alerteNom,
+  alerte?.nomAccessible,
+);
+check(
+  "pastille décorative et animée (seul mouvement : pas de texte défilant)",
+  alerte && alerte.dotAnim === "dot-pulse" && alerte.dotCache === "true",
+  `animation=${alerte?.dotAnim} aria-hidden=${alerte?.dotCache}`,
+);
+check("pastille sur le lien « Événements » de la nav", alerte?.navDot === true);
+check(
+  "bloc compte à rebours dans le hero, nommé pour l'oreille",
+  alerte?.stripVisible === true &&
+    /J−16/.test(alerte?.stripVisibleTexte ?? "") &&
+    alerte?.stripNom === EXPECTED.stripNom,
+  `${alerte?.stripVisibleTexte} · nom=${alerte?.stripNom}`,
+);
+
 await shot("ev-desktop");
 
 /* ------------------------------------------------------------------ MOBILE */
@@ -212,10 +314,37 @@ const mobile = await evaluate(`(() => {
       .every(a => a.getBoundingClientRect().width > 240),
     watermarkHidden: panel.querySelector("p[aria-hidden]")
       ? getComputedStyle(panel.querySelector("p[aria-hidden]")).display === "none" : true,
+    alerte: (() => {
+      const bar = document.querySelector("aside");
+      if (!bar) return null;
+      const out = [];
+      const walk = document.createTreeWalker(bar, NodeFilter.SHOW_TEXT);
+      let n;
+      while ((n = walk.nextNode())) {
+        const el = n.parentElement;
+        if (!el || el.offsetParent === null) continue;
+        const t = n.textContent.trim();
+        if (t) out.push(t);
+      }
+      return out.join(" ");
+    })(),
+    stripVisible: (() => {
+      const s2 = document.querySelector('main section a[href*="tike229"]');
+      return s2 ? getComputedStyle(s2).display !== "none" : false;
+    })(),
   };
 })()`);
 
 check("aucun débordement horizontal en mobile", mobile.overflow <= 0, `${mobile.overflow}px`);
+check(
+  "bande d'annonce en mobile : forme courte, jamais une troncature",
+  mobile.alerte === EXPECTED.alerteMobile,
+  mobile.alerte,
+);
+check(
+  "bloc hero masqué en mobile — c'est la bande qui porte l'annonce",
+  mobile.stripVisible === false,
+);
 check("l'affiche tient dans le panneau", mobile.posterFits === true);
 check("CTA en pleine largeur", mobile.fullWidthCtas === true);
 check(
@@ -224,6 +353,41 @@ check(
 );
 
 await shot("ev-mobile");
+
+/* ------------------------------------------------------ ANIMATIONS RÉDUITES
+   Même piège que le caret du hero : la règle globale fige tout sur la dernière
+   frame, ce qui rendrait la pastille INVISIBLE au lieu de simplement immobile. */
+await cdp.viewport({ width: 1440, height: 900 });
+await cdp.emulateReducedMotion(true);
+await cdp.goto(BASE);
+await sleep(3000);
+
+const reduit = await evaluate(`(() => {
+  const dot = document.querySelector("aside .alert-dot");
+  const strip = document.querySelector('main section a[href*="tike229"]');
+  const ds = dot ? getComputedStyle(dot) : null;
+  const ss = strip ? getComputedStyle(strip) : null;
+  return {
+    dotAnim: ds?.animationName,
+    dotOpacity: ds?.opacity,
+    dotVisible: dot ? dot.getBoundingClientRect().width > 0 : false,
+    haloAnim: ss?.animationName,
+    stripVisible: strip ? ss.display !== "none" : false,
+  };
+})()`);
+
+check(
+  "animations réduites : pastille immobile mais VISIBLE",
+  reduit.dotAnim === "none" && reduit.dotOpacity === "1" && reduit.dotVisible,
+  `animation=${reduit.dotAnim} opacity=${reduit.dotOpacity}`,
+);
+check(
+  "animations réduites : le bloc hero reste affiché, halo figé",
+  reduit.stripVisible === true,
+  `halo=${reduit.haloAnim}`,
+);
+
+await cdp.emulateReducedMotion(false);
 
 const failed = finish();
 cdp.close();

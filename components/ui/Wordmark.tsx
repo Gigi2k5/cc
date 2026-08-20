@@ -24,7 +24,7 @@ export function Wordmark({ withTag = false, className }: WordmarkProps) {
         {BRAND.name} <GradientText>{BRAND.nameAccent}</GradientText>
       </span>
       {withTag ? (
-        <span className="hidden font-mono text-[0.625rem] tracking-[0.14em] text-gris-faible xl:inline">
+        <span className="hidden font-mono text-[0.625rem] tracking-[0.14em] whitespace-nowrap text-gris-faible xl:inline">
           {BRAND.tag}
         </span>
       ) : null}

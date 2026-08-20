@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 
+import { AlertBar } from "@/components/layout/AlertBar";
 import { Footer } from "@/components/layout/Footer";
 import { Nav } from "@/components/layout/Nav";
 import { NetworkLayer } from "@/components/three/NetworkLayer";
+import { upcomingEvenements } from "@/lib/evenements";
 import { fontVariables } from "@/lib/fonts";
 import { SITE_URL } from "@/lib/site";
 
@@ -58,14 +60,23 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  /* Une édition à venir change la hauteur utile du hero : le drapeau porte le
+     token --alert-h, qui vaut 0 le reste de l'année. Sans lui, la bande
+     pousserait le bas du hero sous la ligne de flottaison. */
+  const hasUpcoming = upcomingEvenements().length > 0;
+
   return (
     <html lang="fr" className={`${fontVariables} h-full`}>
-      <body className="flex min-h-full flex-col bg-encre text-craie">
+      <body
+        data-alert={hasUpcoming ? "on" : undefined}
+        className="flex min-h-full flex-col bg-encre text-craie"
+      >
         {/* Réseau global : fixe, derrière toute la page. Le contenu passe
             au-dessus via z-10, et les fonds de section qui doivent le laisser
             voir sont semi-transparents. */}
         <NetworkLayer />
-        <Nav />
+        <AlertBar />
+        <Nav highlightEvents={hasUpcoming} />
         {children}
         <Footer />
         {/* Grain global, purement décoratif (§6). */}

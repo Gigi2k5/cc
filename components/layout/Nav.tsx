@@ -11,8 +11,15 @@ import { useScrollSpy } from "@/lib/hooks/useScrollSpy";
 import { cn } from "@/lib/utils";
 
 const PANEL_ID = "nav-panel";
+/** Le lien qui porte la pastille quand une édition approche. */
+const EVENTS_ID = "evenements";
 
-export function Nav() {
+export function Nav({
+  /** Une édition est à venir : le lien correspondant porte une pastille. */
+  highlightEvents = false,
+}: {
+  highlightEvents?: boolean;
+}) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [navHeight, setNavHeight] = useState(64);
@@ -121,6 +128,10 @@ export function Nav() {
                     )}
                   >
                     {link.label}
+                    {/* Rattrape ceux qui balaient la nav sans lire le hero. */}
+                    {highlightEvents && link.id === EVENTS_ID ? (
+                      <span aria-hidden="true" className="alert-dot ml-1.5 size-1.5 align-middle" />
+                    ) : null}
                     <span
                       aria-hidden="true"
                       className={cn(
@@ -142,7 +153,11 @@ export function Nav() {
                 qui tranche, pas l'ordre dans className. */}
             <div className="hidden lg:block">
               <Magnetic>
-                <Button href={WHATSAPP.primary.href}>{CTA.whatsapp}</Button>
+                {/* Six liens serrent la nav : sans ça le libellé passe sur deux
+                    lignes et le bouton double de hauteur. */}
+                <Button href={WHATSAPP.primary.href} className="whitespace-nowrap">
+                  {CTA.whatsapp}
+                </Button>
               </Magnetic>
             </div>
 
@@ -193,6 +208,9 @@ export function Nav() {
                 )}
               >
                 {link.label}
+                {highlightEvents && link.id === EVENTS_ID ? (
+                  <span aria-hidden="true" className="alert-dot mb-2 ml-2.5 size-2 align-middle" />
+                ) : null}
               </a>
             </li>
           ))}

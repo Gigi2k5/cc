@@ -197,6 +197,26 @@ export const COMMUNAUTE = {
   ],
 } as const;
 
+/**
+ * Bande d'annonce et bloc hero — le dispositif « voyant » de l'événement.
+ *
+ * Il descend exactement de la même source que la section : `upcomingEvenements()`.
+ * Une seule date à tenir à jour, trois endroits qui s'éteignent ensemble.
+ */
+export const ALERTE = {
+  /** Nom accessible du repère qui porte la bande. */
+  label: "Prochaine édition",
+  cta: "Réserver",
+  heroEyebrow: "Prochaine édition",
+  /** Compte à rebours, en voix machine. */
+  countdown: {
+    prefix: "J−",
+    tomorrow: "DEMAIN",
+    today: "AUJOURD'HUI",
+    ongoing: "EN COURS",
+  },
+} as const;
+
 /* --------------------------------------------------------------------------
    Événements — le seul contenu daté du site.
    
@@ -224,6 +244,14 @@ export type Evenement = {
   /** Nom complet, réservé aux données structurées. */
   seoName: string;
   badge: string;
+  /** Formes courtes : la bande est en capitales mono et tient sur une ligne. */
+  dateShort: string;
+  alertTitle: string;
+  /** Sous 640 px : la bande n'a pas la place du libellé complet. */
+  alertTitleShort: string;
+  alertMeta: string;
+  heroTitle: string;
+  heroMeta: string;
   titleBefore: string;
   titleAccent: string;
   titleAfter: string;
@@ -269,6 +297,12 @@ export const EVENEMENTS = {
       slug: "edition-3-presentiel",
       seoName: "Comlan Community — 3e édition présentiel",
       badge: "[ 3E ÉDITION · PRÉSENTIEL ]",
+      dateShort: "05.09",
+      alertTitle: "3E ÉDITION PRÉSENTIEL",
+      alertTitleShort: "3E ÉDITION",
+      alertMeta: "25 PLACES",
+      heroTitle: "3ᵉ édition présentiel",
+      heroMeta: "samedi 5 septembre · 25 places · 2 000 FCFA",
       titleBefore: "Le 5 septembre, on joue",
       titleAccent: "autrement",
       titleAfter: ".",

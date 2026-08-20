@@ -3,6 +3,7 @@
 import { useRef, type CSSProperties } from "react";
 
 import { Container } from "@/components/layout/Container";
+import { HeroEvent, type HeroEventData } from "@/components/sections/HeroEvent";
 import { HeroCanvas } from "@/components/three/HeroCanvas";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
@@ -26,13 +27,18 @@ const delay = (ms: number) => ({ "--rise-delay": `${ms}ms` }) as CSSProperties;
  *   paragraphe et la ligne terminal. C'est ce bloc que la scène vise, donc la
  *   puce est un élément de la mise en page et non un fond derrière le texte.
  */
-export function Hero() {
+export function Hero({
+  /** Prochaine édition, calculée côté serveur. `null` le reste de l'année. */
+  evenement,
+}: {
+  evenement?: HeroEventData | null;
+}) {
   const chipSlot = useRef<HTMLDivElement>(null);
 
   return (
     <section
       aria-labelledby="hero-title"
-      className="relative flex min-h-[calc(100svh-var(--nav-h))] items-center overflow-hidden"
+      className="relative flex min-h-[calc(100svh-var(--nav-h)-var(--alert-h))] items-center overflow-hidden"
     >
       {/* Lumière du fond : évite le noir uniforme, comme dans la maquette. */}
       <div
@@ -153,6 +159,13 @@ export function Hero() {
                 </Button>
               </Magnetic>
             </div>
+
+            {/* Dernier de la cascade : les CTA sont posés, l'œil est libre. */}
+            {evenement ? (
+              <div className="hero-fade" style={delay(1320)}>
+                <HeroEvent event={evenement} />
+              </div>
+            ) : null}
           </div>
 
           {/* Colonne droite desktop : réservée à la puce, portée par le canvas. */}

@@ -120,6 +120,47 @@ comme un fond : sa palette (dorés, rouge saturé) ne doit pas déborder sur cel
 du site. Toute l'information qu'elle porte existe aussi en texte réel, pour les
 lecteurs d'écran comme pour les moteurs.
 
+### Le rendre voyant sans le rendre criard
+
+Une section au 7ᵉ écran ne sert à rien : quelqu'un qui arrive par WhatsApp,
+regarde le hero et repart n'a jamais su qu'il y avait une soirée. Trois niveaux
+répondent à ça, tous alimentés par `upcomingEvenements()` — ils s'allument et
+s'éteignent ensemble.
+
+1. **La bande d'annonce** (`components/layout/AlertBar.tsx`), tout en haut,
+   avant le logo. **Le levier retenu n'est pas le rouge, c'est l'inversion** :
+   sur un site intégralement quasi-noir, un aplat craie est ce qu'on peut faire
+   de plus voyant — et ça ne consomme rien du capital d'accent, que §3 réserve
+   à un ou deux mots par écran. C'est une exception assumée à « sombre
+   partout », arbitrée pour ça et pour rien d'autre. Le seul rouge y est la
+   pastille et la pilule de réservation. La bande **entière** est le lien : un
+   seul arrêt clavier, et une cible tactile de sa hauteur complète.
+2. **Le bloc compte à rebours du hero** (`components/sections/HeroEvent.tsx`),
+   dernier de la chorégraphie de chargement, avec un halo qui respire. Reprend
+   le traitement du bloc `[ TOTAL ]` de la section 2-pour-1. Desktop seulement :
+   le hero mobile tient déjà tout juste en une hauteur d'écran, et là-bas c'est
+   la bande qui porte l'annonce.
+3. **La pastille sur le lien « Événements »** de la nav, pour ceux qui balaient
+   la navigation sans lire le hero.
+
+Trois points qui ont demandé un arbitrage :
+
+- **Pas de texte défilant.** Un ruban aurait été plus voyant encore, mais il
+  aurait déclenché le WCAG 2.2.2 et obligé à fournir un bouton pause. Le seul
+  mouvement est une pastille décorative — et elle reste **visible** en
+  animations réduites, ce qui demande une règle explicite (même piège que le
+  caret du hero).
+- **Ni pop-up ni cookie.** Rien à fermer, donc rien à mémoriser : le dispositif
+  disparaît de lui-même. Le site n'écrit toujours aucune donnée.
+- **`--alert-h`**, déclaré dans `globals.css` et basculé par un `data-alert`
+  sur le `body`, vaut 0 le reste de l'année. Le hero le retranche de sa hauteur
+  utile : sans ça la bande pousserait son bas sous la ligne de flottaison.
+
+Le compte à rebours est calculé côté serveur, en jours calendaires du Bénin :
+« J−16 », puis « DEMAIN », « AUJOURD'HUI » et « EN COURS » pendant la soirée.
+Il est doublé d'une forme parlée — un lecteur d'écran entend « dans 16 jours »
+et non « J moins 16 ».
+
 ## Déploiement (Vercel)
 
 1. **Pousser le dépôt** sur GitHub / GitLab.
@@ -167,12 +208,12 @@ section Événements comprise.
 
 | Poste | Mesure | Budget |
 |---|---|---|
-| JS critique (bloque le 1er rendu) | 145 Ko | ≤ 180 Ko |
+| JS critique (bloque le 1er rendu) | 146 Ko | ≤ 180 Ko |
 | JS différé (scène 3D) | 363 Ko | hors chemin critique |
 | CSS | 9 Ko | ≤ 20 Ko |
 | Polices préchargées | 117 Ko | ≤ 140 Ko |
-| Total page | 692 Ko en 19 requêtes | < 800 Ko |
-| CLS | 0,003 | < 0,02 |
+| Total page | 695 Ko en 20 requêtes | < 800 Ko |
+| CLS | 0 | < 0,02 |
 
 L'affiche de la section Événements n'apparaît pas dans ces 19 requêtes : elle
 est sous la ligne de flottaison et chargée en différé. Servie par `next/image`,
@@ -228,4 +269,4 @@ chacun —, hiérarchie de titres continue, repères sémantiques, cibles tactil
 - [x] Phase 8 — perf, a11y, SEO, responsive, déploiement
 - [x] Phase 9 — section Événements (contenu daté, bascule automatique)
 
-Suite complète : **219/219 vérifications** sur les 10 scripts du harnais.
+Suite complète : **232/232 vérifications** sur les 10 scripts du harnais.
