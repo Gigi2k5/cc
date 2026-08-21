@@ -30,6 +30,9 @@ bash tools/visual/run.sh checks/faq-contact.mjs # accordéon FAQ au clavier + co
 bash tools/visual/run.sh checks/motion.mjs  # magnétisme, spotlight, filets de section
 bash tools/visual/run.sh checks/audit.mjs   # charge utile, axe-core, sémantique, clavier, SEO
 bash tools/visual/run.sh checks/breakpoints.mjs # 360 / 768 / 1024 / 1440
+bash tools/visual/run.sh checks/responsive.mjs # 320/360/390/414 + desktop :
+                                            #   chevauchements, troncatures,
+                                            #   débordements, cibles tactiles
 bash tools/visual/run.sh checks/shots.mjs   # captures des sections (sans vérification)
 
 # Chemin tactile — ce qui doit être DÉSACTIVÉ au doigt.
@@ -48,6 +51,35 @@ Le partage critique / différé se fait contre le **HTML servi** (relu par
 `fetch(location.href)`), pas contre le DOM : le DOM contient aussi les scripts
 injectés par le loader, ce qui ferait passer un chunk différé pour du critique.
 Erreur commise une première fois, d'où la précision.
+
+## Mesurer un débordement, un chevauchement, une troncature
+
+`tools/visual/lib/probe.mjs`, consommée par `checks/responsive.mjs`. Deux règles
+qui ont chacune coûté un aller-retour :
+
+**`scrollWidth > clientWidth` ne vaut rien.** Ces deux propriétés valent **0 sur
+un élément `inline`**, et la moitié des textes du site sont des `<span>`. La
+sonde ne pouvait pas échouer, donc elle ne vérifiait rien. On mesure le texte
+lui-même avec un `Range` : ses `getClientRects()` sont des quads de *layout*, ni
+rognés par `overflow: hidden`, ni raccourcis par `text-overflow: ellipsis` — ce
+sont des opérations de peinture. La géométrie **brute** dit si le texte dépasse
+sa boîte ; la même géométrie **intersectée** avec les boîtes de rognage des
+ancêtres dit ce qui est réellement **peint**, et c'est la seule base valable
+pour parler de chevauchement. Sans cette séparation, chaque `truncate` de la
+bande d'annonce serait signalé comme un chevauchement.
+
+**Un chevauchement se juge en ratio, pas en pixels.** Un quad de texte est la
+boîte de ligne, pas l'encre : dès que l'interlignage est serré, deux lignes
+successives d'un même titre se recouvrent. Relevé sur cette page : titre du
+hero, quad 58,0 px pour une avance de 47,9 px → 10,1 px (17 %) ; titre de
+Communauté, quad 50,0 px pour 40,3 px → 9,7 px (19 %). Une vraie collision côte
+à côte partage ~100 % de la hauteur. Seuil retenu : **55 %**, soit trois fois la
+marge au-dessus du bleed observé et deux fois sous une vraie collision. À 2 px,
+la première version ne remontait que des faux positifs.
+
+Et il faut écarter nommément les superpositions **voulues** : nav collante,
+filigrane terminal de Communauté, grain global, `canvas`, panneaux de FAQ
+repliés (`inert`).
 
 ## Ce que le harnais ne peut pas mesurer
 
@@ -98,6 +130,25 @@ logiciel, seul moyen d'obtenir WebGL2 sans écran. Conséquences :
   l'opacité 1 qu'à ~2,5 s après la séquence complète du script. Mesurée à 1,8 s
   puis à 2,5 s, elle tombait pile sur la ligne d'arrivée : l'attente est
   passée à 3,5 s pour avoir une marge franche plutôt qu'un pile ou face.
+- **Ne jamais figer une valeur qui change chaque jour.** `check:evenements`
+  attendait « J−16 » en dur, à cinq endroits. Au premier changement de date,
+  quatre vérifications sont tombées sans qu'une ligne du site ait bougé. Le
+  compte à rebours est désormais recalculé dans le script — mais par une
+  **seconde route indépendante** de `lib/evenements.ts` : la date de début est
+  recopiée du brief et la règle de comptage (jours calendaires au Bénin, UTC+1
+  sans heure d'été) réécrite sur place. Importer `countdownLabel` ferait du test
+  un miroir du code, qui ne vérifierait plus rien.
+- **`overflow: hidden` reste défilable par script.** Un test négatif qui pose
+  `element.scrollTop = element.scrollHeight` passe donc aussi bien sur le code
+  cassé que sur le code corrigé : le premier test écrit pour le panneau de nav
+  l'a fait, et n'a rien prouvé. Le vrai état cassé était `overflow: visible` —
+  là, `scrollTop` reste à 0. Une sonde d'atteignabilité doit donc vérifier
+  `overflow-y` **et** défiler pour de vrai avant de mesurer.
+- **Un viewport mobile large mais haut cache les défauts de hauteur.**
+  `check:breakpoints` teste 360 px de large sur 900 px de haut : le panneau de
+  nav y tenait, alors qu'il débordait de 113 px sur un vrai 360×640. Les
+  largeurs de `checks/responsive.mjs` sont donc associées à des hauteurs
+  d'appareils réelles (320×568, 360×640, 390×844, 414×896).
 - `Input.dispatchKeyEvent` en `rawKeyDown` ne fait pas cliquer un `<button>` :
   il faut `keyDown` avec `text` (`\r` pour Entrée, espace pour Espace). Entrée
   déclenche le clic au keydown, Espace au keyup.

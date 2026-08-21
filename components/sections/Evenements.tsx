@@ -163,10 +163,20 @@ function EventPanel({ event }: { event: Evenement }) {
         </figure>
 
         <div className="lg:col-start-1 lg:row-start-2">
-          <ul className="mt-8 flex flex-wrap gap-2">
+          {/* Nuage d'étiquettes à partir de 640 px, plaques pleine largeur en
+              dessous. Ce n'est pas un repli faute de mieux : à 320 px la carte
+              n'offre que 216 px de contenu et les étiquettes mesurent de 106 à
+              185 px (mesuré), donc il en tient une par ligne — sept lignes aux
+              bords droits tous différents, qui se lisent comme un accident de
+              retour à la ligne plutôt que comme un nuage. Pleine largeur, la
+              même information devient une pile de plaques de spec régulière,
+              qui parle la même langue que la fiche technique juste au-dessus
+              (§2), et pour exactement la même hauteur : 7 × 41 px + 6 × 8 px de
+              gouttière contre 7 × 46 px avant. */}
+          <ul className="mt-8 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             {event.programme.map((item) => (
               <li key={item}>
-                <Chip>{item}</Chip>
+                <Chip className="w-full sm:w-auto">{item}</Chip>
               </li>
             ))}
           </ul>

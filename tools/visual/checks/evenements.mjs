@@ -19,6 +19,41 @@ const cdp = await connect({
 const { check, finish } = createReport();
 const { evaluate, sleep, screenshot: shot } = cdp;
 
+/**
+ * Le compte à rebours change CHAQUE JOUR : le figer en dur revient à écrire un
+ * test qui échoue le lendemain — et c'est arrivé. Un « J−16 » gelé la veille a
+ * fait tomber quatre vérifications au premier changement de date, sans qu'une
+ * ligne du site ait bougé.
+ *
+ * Il est donc recalculé ici, mais par une **seconde route indépendante** de
+ * `lib/evenements.ts` : la date de début est recopiée du brief, et la règle de
+ * comptage (jours calendaires au Bénin, UTC+1 toute l'année, sans heure d'été)
+ * est réécrite sur place. Importer `countdownLabel` ferait du test un miroir du
+ * code, qui ne vérifierait plus rien.
+ */
+const DEBUT = "2026-09-05T15:00:00+01:00";
+const debutMs = new Date(DEBUT).getTime();
+/** Numéro du jour calendaire au Bénin (UTC+1). */
+const jourBenin = (ms) => Math.floor((ms + 3_600_000) / 86_400_000);
+const restants = jourBenin(debutMs) - jourBenin(Date.now());
+const enCours = Date.now() >= debutMs;
+
+const COMPTE = enCours
+  ? "EN COURS"
+  : restants <= 0
+    ? "AUJOURD'HUI"
+    : restants === 1
+      ? "DEMAIN"
+      : `J−${restants}`;
+/** La forme entendue : « dans 16 jours », pas « J moins 16 ». */
+const PARLE = enCours
+  ? "en cours"
+  : restants <= 0
+    ? "aujourd'hui"
+    : restants === 1
+      ? "demain"
+      : `dans ${restants} jours`;
+
 /** Copie attendue, recopiée depuis le brief et non depuis le code. */
 const EXPECTED = {
   sectionTitle: "Ce qui se passe bientôt.",
@@ -43,12 +78,11 @@ const EXPECTED = {
   ticket: "https://tike229.ghinel.com/",
   ticketLabel: "Réserver ta place",
   /* Le dispositif « voyant » : bande d'annonce, bloc hero, pastille de nav. */
-  alerte: "[ 05.09 ] 3E ÉDITION PRÉSENTIEL · 25 PLACES J−16 Réserver →",
-  alerteMobile: "[ 05.09 ] 3E ÉDITION J−16 Réserver",
-  alerteNom:
-    "Prochaine édition : 3ᵉ édition présentiel, samedi 5 septembre · 25 places · 2 000 FCFA, dans 16 jours. Réserver.",
-  stripNom:
-    "Prochaine édition : 3ᵉ édition présentiel, samedi 5 septembre · 25 places · 2 000 FCFA, dans 16 jours.",
+  alerte: `[ 05.09 ] 3E ÉDITION PRÉSENTIEL · 25 PLACES ${COMPTE} Réserver →`,
+  alerteMobile: `[ 05.09 ] 3E ÉDITION ${COMPTE} Réserver`,
+  compte: COMPTE,
+  alerteNom: `Prochaine édition : 3ᵉ édition présentiel, samedi 5 septembre · 25 places · 2 000 FCFA, ${PARLE}. Réserver.`,
+  stripNom: `Prochaine édition : 3ᵉ édition présentiel, samedi 5 septembre · 25 places · 2 000 FCFA, ${PARLE}.`,
 };
 
 await cdp.viewport({ width: 1440, height: 900 });
@@ -285,7 +319,7 @@ check("pastille sur le lien « Événements » de la nav", alerte?.navDot === tr
 check(
   "bloc compte à rebours dans le hero, nommé pour l'oreille",
   alerte?.stripVisible === true &&
-    /J−16/.test(alerte?.stripVisibleTexte ?? "") &&
+    (alerte?.stripVisibleTexte ?? "").includes(EXPECTED.compte) &&
     alerte?.stripNom === EXPECTED.stripNom,
   `${alerte?.stripVisibleTexte} · nom=${alerte?.stripNom}`,
 );

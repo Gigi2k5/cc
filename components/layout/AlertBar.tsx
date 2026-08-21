@@ -56,9 +56,21 @@ export function AlertBar() {
           {/* `min-w-0` + `truncate` : en flex, un texte `nowrap` qui ne rentre
               pas ne se coupe pas — il DÉBORDE par-dessus ses voisins. C'est ce
               qui se produisait à 320 et 360 px, où « J−16 » venait se poser sur
-              « 3E ÉDITION ». Les tailles ci-dessus suffisent à ce que ça tienne
-              partout ; la troncature n'est que le filet de sécurité. */}
-          <span className="min-w-0 truncate sm:hidden">{event.alertTitleShort}</span>
+              « 3E ÉDITION ». La troncature n'est plus qu'un filet de sécurité.
+
+              Le titre disparaît sous 360 px, et ce n'est pas de la place qu'on
+              gagne au rabais. Mesuré à 320 px : le groupe central dispose de
+              138 px et il lui en faut 153 (pastille de date 75 + gouttière 8 +
+              titre 70) — il manque 15 px, et le filet rendait « 3E ÉDIT… ».
+              Un mot coupé dans une bande de promo se lit comme un bug ; en
+              gratter les 15 px sur les gouttières et l'interlettrage faisait
+              tomber le calcul à 2 px près, soit un pile ou face selon la police
+              réellement chargée. Le titre est ce qui se sacrifie le mieux : la
+              date, le compte à rebours et l'action, eux, portent le message —
+              et le nom accessible du lien, lui, ne change pas d'un pixel. */}
+          <span className="hidden min-w-0 truncate min-[360px]:block sm:hidden">
+            {event.alertTitleShort}
+          </span>
           <span className="hidden min-w-0 truncate sm:inline">{event.alertTitle}</span>
           <span aria-hidden="true" className="hidden shrink-0 text-encre/45 sm:inline">
             ·

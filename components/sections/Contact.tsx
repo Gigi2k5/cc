@@ -37,7 +37,7 @@ export function Contact() {
               <li key={social.name}>
                 <a
                   href={social.href}
-                  className="flex items-center gap-2 text-sm text-gris transition-colors duration-[var(--duration-micro)] ease-micro hover:text-rouge"
+                  className="flex min-h-11 items-center gap-2 text-sm text-gris transition-colors duration-[var(--duration-micro)] ease-micro hover:text-rouge"
                 >
                   <BrandIcon name={social.icon} />
                   {social.name}

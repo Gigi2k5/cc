@@ -104,9 +104,13 @@ export function Nav({
           aria-label="Navigation principale"
           className="mx-auto flex h-full max-w-page items-center justify-between gap-8 px-[var(--gutter)]"
         >
+          {/* `min-h-11` : sans lui la cible ne fait que la hauteur du texte,
+              soit 19 px — bien en dessous des 44 px de §12. La nav fait 64 px,
+              rien ne bouge à l'écran. */}
           <a
             href="#top"
             aria-label={`${BRAND.name} ${BRAND.nameAccent} — retour en haut`}
+            className="flex min-h-11 items-center"
           >
             <Wordmark withTag />
           </a>
@@ -189,15 +193,30 @@ export function Nav({
         aria-label="Menu"
         aria-hidden={!open}
         className={cn(
+          "fixed inset-0 z-40 flex flex-col bg-encre lg:hidden",
+          /* `overflow-y-auto` : six liens en 36 px, un CTA et la signature
+             font 642 px de haut au minimum. Sur un 360×640 — une taille
+             d'Android parmi les plus courantes — ça dépasse, et comme le
+             scroll du body est verrouillé à l'ouverture, le bouton WhatsApp
+             était purement INATTEIGNABLE (mesuré : bas de panneau à 753 px
+             pour 640 px d'écran, 568 px sur un iPhone SE où « Contact »
+             lui-même était coupé). Le panneau défile désormais. */
+          "overflow-y-auto overscroll-contain",
           /* La nav n'est plus collée en haut : la bande d'annonce la précède.
              Le panneau doit donc réserver les deux, sinon son premier lien
-             passe sous l'en-tête. */
-          "fixed inset-0 z-40 flex flex-col justify-between bg-encre pt-[calc(var(--nav-h)+var(--alert-h))] lg:hidden",
+             passe sous l'en-tête. Une fois défilé la bande n'est plus là, et
+             réserver sa hauteur ne ferait que 48 px de vide — autant de pris
+             sur ce qui doit tenir dans l'écran. */
+          scrolled ? "pt-[var(--nav-h)]" : "pt-[calc(var(--nav-h)+var(--alert-h))]",
           "transition-opacity duration-[var(--duration-standard)] ease-standard",
           open ? "visible opacity-100" : "invisible opacity-0",
         )}
       >
-        <ul className="flex flex-col gap-2 px-[var(--gutter)] pt-10">
+        {/* Rythme resserré : à gap-2/pt-10 le panneau faisait 692 px et
+            débordait de tous les téléphones courts. À gap-1/pt-4 il tombe à
+            642 px, donc il tient sans défiler dès 667 px de haut (iPhone SE 2/3,
+            iPhone 8) — les 36 px des liens, eux, ne se négocient pas. */}
+        <ul className="flex flex-col gap-1 px-[var(--gutter)] pt-4">
           {NAV_LINKS.map((link, index) => (
             <li key={link.id}>
               <a
@@ -205,7 +224,7 @@ export function Nav({
                 href={`#${link.id}`}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "block py-3 font-display text-[2.25rem] leading-tight transition-colors",
+                  "block py-2 font-display text-[2.25rem] leading-tight transition-colors",
                   "duration-[var(--duration-micro)] ease-micro",
                   active === link.id ? "text-rouge" : "text-craie",
                 )}
@@ -219,7 +238,11 @@ export function Nav({
           ))}
         </ul>
 
-        <div className="flex flex-col gap-6 px-[var(--gutter)] pb-12">
+        {/* `mt-auto` et non `justify-between` sur le parent : quand il y a de
+            la place le bloc va au bas de l'écran, exactement comme avant ;
+            quand il n'y en a pas la marge automatique tombe à zéro au lieu de
+            pousser le bloc hors de la zone défilable. */}
+        <div className="mt-auto flex flex-col gap-5 px-[var(--gutter)] pb-8">
           <Button
             href={WHATSAPP.primary.href}
             size="lg"

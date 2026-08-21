@@ -49,6 +49,9 @@ npm run check:motion      # magnétisme, spotlight, filets, cohérence motion.ts
 npm run check:touch       # ce qui doit être désactivé au doigt
 npm run check:audit       # charge utile, axe-core, sémantique, clavier, SEO
 npm run check:breakpoints # 360 / 768 / 1024 / 1440
+npm run check:responsive  # 320 / 360 / 390 / 414 + desktop : chevauchements,
+                          #   troncatures, débordements, cibles tactiles
+npm run check:responsive:touch  # le même, en pointeur grossier
 npm run shots             # captures des sections (sans vérification)
 ```
 
@@ -139,7 +142,8 @@ s'éteignent ensemble.
    dernier de la chorégraphie de chargement, avec un halo qui respire. Reprend
    le traitement du bloc `[ TOTAL ]` de la section 2-pour-1. Desktop seulement :
    le hero mobile tient déjà tout juste en une hauteur d'écran, et là-bas c'est
-   la bande qui porte l'annonce.
+   la bande qui porte l'annonce. **Ce n'est pas un dispositif au-dessus de la
+   ligne de flottaison** — voir la mesure plus bas.
 3. **La pastille sur le lien « Événements »** de la nav, pour ceux qui balaient
    la navigation sans lire le hero.
 
@@ -152,14 +156,166 @@ Trois points qui ont demandé un arbitrage :
   caret du hero).
 - **Ni pop-up ni cookie.** Rien à fermer, donc rien à mémoriser : le dispositif
   disparaît de lui-même. Le site n'écrit toujours aucune donnée.
+- **La bande n'est pas collante**, et c'est un choix reconduit. La rendre
+  collante coûterait 48 px de chaque écran en permanence : sur un 360×640 —
+  taille Android courante — la bande plus la nav confisqueraient 112 px, soit
+  17 % de l'écran, pour toute la visite. La pastille sur « Événements » dans la
+  nav est déjà le rappel persistant, et elle ne coûte rien.
 - **`--alert-h`**, déclaré dans `globals.css` et basculé par un `data-alert`
   sur le `body`, vaut 0 le reste de l'année. Le hero le retranche de sa hauteur
   utile : sans ça la bande pousserait son bas sous la ligne de flottaison.
+
+#### Le bloc du hero contre la ligne de flottaison
+
+Bas du bloc contre la hauteur de fenêtre, mesuré sur le build de production :
+
+| Fenêtre | Bas du bloc | Marge |
+|---|---|---|
+| 1280×720 | 897 px | −177 px |
+| 1366×768 | 902 px | −134 px |
+| 1440×800 | 906 px | −106 px |
+| 1512×850 | 911 px | −61 px |
+| 1440×900 | 906 px | −6 px |
+| 1920×1080 | 950 px | +130 px |
+
+Le bloc n'est donc entier au-dessus de la ligne de flottaison qu'à partir de
+~910 px de fenêtre. **Décision : on le garde tel quel, et on cesse de le
+présenter comme un dispositif d'accueil.**
+
+La colonne de texte du hero fait 688 px à elle seule, et le hero mesure 841 à
+948 px selon la largeur : il a **toujours** dépassé l'écran sur toutes ces
+fenêtres — un `min-h` est un plancher, pas un plafond. Le bloc est le dernier
+temps du hero, pas un badge. Le faire tenir à 768 px demanderait de retirer
+~135 px à la composition, c'est-à-dire de rogner le `h1` ou le rythme des CTA :
+on échangerait l'atout le plus fort de la page contre la quatrième mention du
+même événement dans le même écran. Et sur desktop l'annonce est **déjà**
+imratable à l'arrivée — la bande craie est à `y=0`, avant le logo, sur toutes
+les fenêtres. Rogner 14 px de padding du hero ferait passer la seule bande
+900 px au-dessus du pli : un gain d'une classe de fenêtre contre une retouche
+de la composition signature. Non.
 
 Le compte à rebours est calculé côté serveur, en jours calendaires du Bénin :
 « J−16 », puis « DEMAIN », « AUJOURD'HUI » et « EN COURS » pendant la soirée.
 Il est doublé d'une forme parlée — un lecteur d'écran entend « dans 16 jours »
 et non « J moins 16 ».
+
+## Mobile & responsive
+
+Le trafic vient surtout de WhatsApp, donc du téléphone, et c'est là que ce site
+a mordu trois fois. `check:responsive` rejoue **320 / 360 / 390 / 414 px et le
+desktop**, avec des hauteurs d'appareils réelles plutôt qu'un 900 px commode :
+c'est la hauteur qui décide de ce qui passe sous la ligne de flottaison.
+
+### La méthode, parce qu'elle a coûté cher
+
+Ne **jamais** tester un débordement avec `scrollWidth > clientWidth` : ces deux
+propriétés valent **0 sur un élément `inline`**, et la moitié des textes du site
+sont des `<span>`. Une sonde qui ne peut pas échouer ne vérifie rien.
+
+On mesure donc le texte lui-même avec un `Range` (`tools/visual/lib/probe.mjs`).
+Ses `getClientRects()` sont des quads de *layout* : ni rognés par
+`overflow: hidden`, ni raccourcis par `text-overflow: ellipsis` — ce sont deux
+opérations de peinture. D'où deux lectures qu'il faut tenir séparées :
+
+- la géométrie **brute** dit si un texte dépasse sa boîte (troncature,
+  débordement) ;
+- la même géométrie **intersectée** avec les boîtes de rognage de tous les
+  ancêtres dit ce qui est réellement **peint**, seule base valable pour parler
+  de chevauchement. Sans cette distinction, chaque `truncate` de la bande
+  d'annonce serait signalé comme un chevauchement : le texte tronqué s'étend en
+  layout jusque sous ses voisins alors qu'à l'écran il s'arrête sur l'ellipse.
+
+Et le seuil de chevauchement est un **ratio**, pas des pixels. Un quad de texte
+est la boîte de ligne, pas l'encre : dès que l'interlignage est serré, deux
+lignes successives d'un même titre se recouvrent toujours un peu. Relevé ici :
+titre du hero, quad 58,0 px pour une avance de 47,9 px → 10,1 px (17 %) ; titre
+de Communauté, quad 50,0 px pour 40,3 px → 9,7 px (19 %). Une vraie collision
+côte à côte partage ~100 % de la hauteur de ligne. Le seuil est à **55 %**. La
+première version de la sonde, à 2 px, ne remontait que des faux positifs — trois
+défauts sur quatre étaient dans le harnais, une fois de plus.
+
+**Superpositions voulues, à écarter avant de crier au bug** : la nav collante,
+le filigrane terminal de Communauté (3,5 % d'opacité), le grain global, les
+`canvas`, et les panneaux de FAQ repliés (`inert`). La sonde les exclut
+nommément.
+
+### Trois défauts trouvés, dont un bloquant
+
+1. **Le panneau de nav mobile était sans issue sur les téléphones courts.** Six
+   liens en 36 px, un CTA et la signature faisaient 692 px de haut ; le panneau
+   ne défilait pas (`overflow` par défaut) et le scroll du `body` est verrouillé
+   à l'ouverture. Mesuré : bas de panneau à **753 px pour un écran de 640 px**
+   (360×640, une des tailles Android les plus courantes) — le bouton « Parler
+   sur WhatsApp » était **hors d'atteinte**, et à 320×568 « Contact » lui-même
+   était coupé. Corrigé sur trois fronts : `overflow-y-auto` (le filet qui ne
+   peut pas échouer), rythme vertical resserré (692 → 642 px, donc ça tient sans
+   défiler dès 667 px de haut — iPhone SE 2/3, iPhone 8), et la hauteur réservée
+   en haut qui suit désormais la bande : elle valait toujours
+   `--nav-h + --alert-h` alors que la bande a défilé dès le premier pixel, soit
+   48 px de vide pris sur ce qui doit tenir dans l'écran.
+
+   Le test qui le prouve **défile pour de vrai** jusqu'au bout du panneau et
+   vérifie que le CTA est dans l'écran. Piège au passage : `overflow: hidden`
+   reste défilable **par script**. Vérifier `element.scrollTop` sans vérifier
+   `overflow-y` ne prouve rien — le premier test négatif écrit ici passait
+   aussi bien sur le code cassé que sur le code corrigé.
+
+2. **La bande d'annonce dégradait en « 3E ÉDIT… » à 320 px.** Le groupe central
+   dispose de 138 px et il lui en faut 153 (pastille de date 75 + gouttière 8 +
+   titre 70). Gratter les 15 px sur les gouttières et l'interlettrage faisait
+   tomber le calcul à 2 px près, soit un pile ou face selon la police réellement
+   chargée. Le titre est donc **masqué sous 360 px** : la date, le compte à
+   rebours et l'action portent le message, et le nom accessible du lien ne change
+   pas d'un pixel. Un mot coupé dans une bande de promo se lit comme un bug.
+
+3. **Sept cibles tactiles sous 44 px** : le wordmark de la nav (132×19) et les
+   six liens réseaux du panneau de contact et du pied de page (~90×20). Le
+   harnais ne les mesurait pas — `check:faq` ne couvrait que les en-têtes de FAQ
+   et le bouton du groupe, alors que ce README annonçait la règle comme mesurée.
+   Corrigé par `min-h-11`, sans rien déplacer à l'écran.
+
+**Le plancher tactile dépend du pointeur, pas de la largeur** : 44 px au doigt
+(§12), 24 px à la souris (WCAG 2.5.8 AA). Un lien de nav desktop de 36 px de haut
+n'est pas un défaut, et le signaler noierait les vrais. Restent exemptés les
+liens de colonne du pied de page : `<a>` en ligne dans un `<li>`, 20 px de haut
+mais 32 px de pas vertical — ils passent 2.5.8 par la **clause d'espacement**,
+pas par la taille. C'est le seul endroit du site où §12 est lu au sens de la
+norme plutôt qu'au pied de la lettre.
+
+### Les chips du programme
+
+Elles s'empilaient une par ligne sous 640 px, aux bords droits tous différents.
+Ce n'est pas rattrapable en resserrant : à 320 px la carte n'offre que 216 px de
+contenu et les étiquettes mesurent de 106 à 185 px. Elles passent donc en
+**plaques pleine largeur** sous `sm` — la même information devient une pile
+régulière qui parle la langue de la fiche technique juste au-dessus (§2), et
+pour exactement la même hauteur : 7 × 41 px + 6 × 8 px de gouttière contre
+7 × 46 px avant. Le nuage d'étiquettes revient dès 640 px.
+
+### Le paysage
+
+C'est l'orientation la plus vite oubliée, et celle où la hauteur utile fond de
+moitié. Un 844×390 (iPhone 14 couché) reste en mode burger — la nav ne passe en
+liens qu'à 1024 px — donc un panneau de 642 px doit tenir dans 390 px d'écran.
+C'est exactement le cas que le défilement du panneau rend viable, et
+`check:responsive` le vérifie au même titre que les autres : aucun
+chevauchement, aucune troncature, CTA atteignable. Le programme y retrouve son
+nuage d'étiquettes (4 + 3), puisqu'on est au-dessus de `sm`.
+
+### Ce qui reste hors de portée
+
+Aucune de ces mesures ne remplace un vrai téléphone, et il faut le dire plutôt
+que le laisser oublier. Chrome headless ne donne ni le rendu de police d'Android,
+ni le clavier virtuel, ni le scroll tactile réel, ni les fps, ni les barres
+d'interface qui mangent la hauteur de fenêtre. **À contrôler sur un appareil
+avant mise en ligne**, en priorité : le panneau de nav sur un écran court, la
+bande d'annonce à 320 px, et le programme de la section Événements.
+
+Un point qui ne se voit qu'en vrai : le `viewport` ne déclare pas
+`viewport-fit=cover`, donc iOS garde le contenu dans la zone sûre — pas de
+recouvrement par l'encoche, mais une bande à la couleur du thème (`#080808`)
+au-dessus de la bande craie. C'est le comportement voulu et le plus sûr ;
+à confirmer à l'œil sur un iPhone à encoche.
 
 ## Déploiement (Vercel)
 
@@ -210,10 +366,13 @@ section Événements comprise.
 |---|---|---|
 | JS critique (bloque le 1er rendu) | 146 Ko | ≤ 180 Ko |
 | JS différé (scène 3D) | 363 Ko | hors chemin critique |
-| CSS | 9 Ko | ≤ 20 Ko |
+| CSS | 11 Ko | ≤ 20 Ko |
 | Polices préchargées | 117 Ko | ≤ 140 Ko |
-| Total page | 695 Ko en 20 requêtes | < 800 Ko |
+| Total page | 697 Ko en 20 requêtes | < 800 Ko |
 | CLS | 0 | < 0,02 |
+
+Le CSS est passé de 9 à 11 Ko avec la passe responsive (variantes de largeur
+supplémentaires) — 2 Ko pour trois défauts mobiles, dont un bloquant.
 
 L'affiche de la section Événements n'apparaît pas dans ces 19 requêtes : elle
 est sous la ligne de flottaison et chargée en différé. Servie par `next/image`,
@@ -236,8 +395,15 @@ aucune violation. Deux exceptions assumées, arbitrées et documentées :
    autre violation de contraste apparaît, ou si celle-ci sort du filigrane.
 
 Le reste est mesuré : parcours clavier complet — 32 arrêts, anneau de focus sur
-chacun —, hiérarchie de titres continue, repères sémantiques, cibles tactiles
-≥ 44 px, `prefers-reduced-motion` respecté partout.
+chacun —, hiérarchie de titres continue, repères sémantiques,
+`prefers-reduced-motion` respecté partout.
+
+Les **cibles tactiles** sont désormais mesurées pour de bon, par
+`check:responsive`, sur tous les éléments interactifs de la page et non plus sur
+deux d'entre eux : 44 px au doigt (§12), 24 px à la souris (WCAG 2.5.8 AA). Sept
+cibles étaient sous le plancher sans que rien ne le signale — voir « Mobile &
+responsive ». Seule exception assumée : les liens de colonne du pied de page,
+qui passent par la clause d'espacement de 2.5.8 plutôt que par la taille.
 
 ## Points ouverts
 
@@ -250,9 +416,9 @@ chacun —, hiérarchie de titres continue, repères sémantiques, cibles tactil
   resserrée entre 1024 et 1280 px et le suffixe `[ C//C — BÉNIN ]` n'apparaît
   qu'à partir de 1280 px pour faire de la place. À contrôler à l'œil : ça n'a
   pas pu être mesuré (voir ci-dessous).
-- **Harnais non rejoué** — les vérifications exigent `google-chrome` dans le
-  PATH, absent de la machine où la section a été écrite. Elles ont été mises à
-  jour mais **pas exécutées** : à relancer entièrement avant mise en ligne.
+- **Vrai téléphone** — voir « Ce qui reste hors de portée » : le panneau de nav
+  sur écran court, la bande à 320 px et le programme de la section Événements
+  sont les trois points à confirmer à la main.
 - **Fps réels** — le harnais tourne en WebGL logiciel et ne peut pas les
   mesurer. À contrôler sur machine et sur téléphone avant mise en production.
 
@@ -268,5 +434,24 @@ chacun —, hiérarchie de titres continue, repères sémantiques, cibles tactil
 - [x] Phase 7 — chorégraphie (magnétisme, spotlight, transitions de section)
 - [x] Phase 8 — perf, a11y, SEO, responsive, déploiement
 - [x] Phase 9 — section Événements (contenu daté, bascule automatique)
+- [x] Phase 10 — passe mobile-first : 320 / 360 / 390 / 414 / paysage / desktop,
+      sonde de chevauchement et de troncature au `Range`, cibles tactiles
+      réellement mesurées
 
-Suite complète : **232/232 vérifications** sur les 10 scripts du harnais.
+Suite complète : **290/290 vérifications** sur les 11 scripts du harnais.
+
+| Script | Vérifications |
+|---|---|
+| `check:shell` | 26 |
+| `check:hero` | 23 |
+| `check:content` | 22 |
+| `check:community` | 23 |
+| `check:evenements` | 37 |
+| `check:faq` | 29 |
+| `check:motion` | 21 |
+| `check:audit` | 28 |
+| `check:breakpoints` | 20 |
+| `check:touch` | 6 |
+| `check:responsive` | 55 |
+
+`check:responsive:touch` rejoue les 55 mêmes vérifications en pointeur grossier.
