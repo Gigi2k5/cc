@@ -5,6 +5,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { GradientText } from "@/components/ui/GradientText";
 import { Reveal } from "@/components/ui/Reveal";
 import { CONTACT, SOCIALS, WHATSAPP } from "@/lib/content";
+import { isExternal } from "@/lib/utils";
 
 const NUMBERS = [WHATSAPP.primary, WHATSAPP.secondary];
 
@@ -37,6 +38,16 @@ export function Contact() {
               <li key={social.name}>
                 <a
                   href={social.href}
+                  /* Ces liens ont longtemps été des « # » : sans attributs
+                     d'ouverture, ça ne coûtait rien. Dès qu'un vrai compte est
+                     branché, il doit partir en nouvel onglet avec un rel sûr,
+                     comme toute sortie du site. `isExternal` tranche sur le
+                     href, donc un compte ajouté plus tard l'obtient sans que
+                     personne ait à y penser. */
+                  target={isExternal(social.href) ? "_blank" : undefined}
+                  rel={
+                    isExternal(social.href) ? "noopener noreferrer" : undefined
+                  }
                   className="flex min-h-11 items-center gap-2 text-sm text-gris transition-colors duration-[var(--duration-micro)] ease-micro hover:text-rouge"
                 >
                   <BrandIcon name={social.icon} />

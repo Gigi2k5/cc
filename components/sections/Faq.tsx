@@ -2,6 +2,7 @@ import { Section } from "@/components/layout/Section";
 import { Accordion } from "@/components/ui/Accordion";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Reveal } from "@/components/ui/Reveal";
+import { SectionTitle } from "@/components/ui/SectionTitle";
 import { FAQ } from "@/lib/content";
 
 /** Titre à gauche, accordéon à droite — comme la maquette (1fr / 1.4fr). */
@@ -14,12 +15,9 @@ export function Faq() {
     >
       <Reveal>
         <Eyebrow>{FAQ.eyebrow}</Eyebrow>
-        <h2
-          id="faq-title"
-          className="mt-6 font-impact text-[clamp(2.2rem,5vw,3.25rem)] leading-[1.1]"
-        >
+        <SectionTitle id="faq-title" level="appui" className="mt-6">
           {FAQ.title}
-        </h2>
+        </SectionTitle>
       </Reveal>
 
       <Reveal delay={80}>

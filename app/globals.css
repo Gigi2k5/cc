@@ -425,3 +425,104 @@ body[data-alert="on"] {
     background-size: 200px 200px;
   }
 }
+
+/* ==========================================================================
+   Anneau d'images — en-tête de la section Événements (voir EventOrbit.tsx)
+
+   Chaque carte est posée sur un cercle par une chaîne de transformations, et
+   non par des coordonnées calculées en JavaScript : le navigateur sait le
+   faire, et ça reste un composant serveur sans une ligne de script.
+
+     translate(-50%,-50%)   centre la carte sur le centre de l'anneau
+     rotate(var(--a))       l'amène à sa position angulaire
+     translateY(-r)         la pousse sur le cercle
+     rotate(-a * 0.72)      la redresse en partie
+
+   Ce dernier facteur est le seul réglage qui compte. À 0, les cartes restent
+   tangentes au cercle : joli sur des images abstraites, mais nos portraits se
+   retrouvent la tête en bas dans toute la moitié basse. À 1, tout est droit et
+   l'anneau devient une grille circulaire sans vie. À 0,72 il reste une
+   inclinaison qui suit le cercle, et aucun visage ne dépasse ~25° — personne
+   n'a jamais la tête à l'envers.
+
+   Le rayon et la taille des cartes sont des variables : l'anneau se règle par
+   palier de largeur, sans qu'aucune position n'ait à être réécrite.
+   ========================================================================== */
+@layer components {
+  .photo-ring {
+    /* 320px : rayon 104 + carte 44 → 296px de diamètre pour 280 d'utile. */
+    --ring-r: 104px;
+    --ring-card-w: 44px;
+    position: relative;
+    width: calc(var(--ring-r) * 2 + var(--ring-card-w) * 1.34);
+    height: calc(var(--ring-r) * 2 + var(--ring-card-w) * 1.34);
+    /* Respiration lente : ±5°, jamais un tour complet. Un anneau qui tourne
+       vraiment finit par renverser les visages, quel que soit le redressement. */
+    animation: ring-sway 30s var(--ease-standard) infinite;
+  }
+
+  @media (min-width: 390px) {
+    .photo-ring {
+      --ring-r: 128px;
+      --ring-card-w: 54px;
+    }
+  }
+
+  @media (min-width: 640px) {
+    .photo-ring {
+      --ring-r: 206px;
+      --ring-card-w: 80px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .photo-ring {
+      --ring-r: 292px;
+      --ring-card-w: 100px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .photo-ring {
+      --ring-r: 330px;
+      --ring-card-w: 110px;
+    }
+  }
+
+  .photo-ring-item {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--ring-card-w);
+    transform: translate(-50%, -50%) rotate(var(--a))
+      translateY(calc(var(--ring-r) * -1)) rotate(calc(var(--a) * -0.72));
+  }
+
+  @keyframes ring-sway {
+    0%,
+    100% {
+      rotate: -5deg;
+    }
+    50% {
+      rotate: 5deg;
+    }
+  }
+
+  /* Dérive propre à chaque carte, par-dessus la respiration de l'anneau : sans
+     elle, treize cartes bougent comme un seul bloc rigide. Appliquée sur un
+     enfant pour ne pas écraser la chaîne de transformations ci-dessus. */
+  @keyframes ring-float {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 0 -6px;
+    }
+  }
+
+  .photo-ring-float {
+    animation: ring-float var(--float-d, 9s) var(--ease-standard) infinite;
+    animation-delay: var(--float-delay, 0s);
+  }
+}

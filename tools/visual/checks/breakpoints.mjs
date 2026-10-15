@@ -16,8 +16,12 @@ const cdp = await connect({
 const { check, finish } = createReport();
 const { evaluate, sleep, screenshot: shot } = cdp;
 
-/** Tailwind : sm 640 · lg 1024. Le brief demande ces quatre largeurs. */
-const WIDTHS = [360, 768, 1024, 1440];
+/**
+ * Tailwind : sm 640 · lg 1024 · xl 1280. Le brief demandait quatre largeurs ;
+ * 1280 s'y ajoute depuis que la nav y bascule — c'est devenu le seuil qui
+ * décide de la présentation de l'en-tête, il doit être mesuré.
+ */
+const WIDTHS = [360, 768, 1024, 1280, 1440];
 
 const probe = `(() => {
   const styleOf = (sel) => {
@@ -54,7 +58,12 @@ for (const width of WIDTHS) {
   await sleep(3000);
 
   const state = await evaluate(probe);
+  /* Gouttières et hauteur de nav basculent toujours à 1024. */
   const mobileLayout = width < 1024;
+  /* La nav, elle, bascule à 1280 depuis qu'elle porte sept liens : entre 1024
+     et 1280 ils ne tenaient qu'en resserrant la gouttière à l'illisible. Le
+     panneau burger prend le relais sur toute cette plage. */
+  const navBurger = width < 1280;
 
   check(
     `${width}px — aucun débordement horizontal`,
@@ -68,8 +77,8 @@ for (const width of WIDTHS) {
     `gutter=${state.gutter} nav=${state.navH}`,
   );
   check(
-    `${width}px — nav en mode ${mobileLayout ? "burger" : "liens"}`,
-    mobileLayout
+    `${width}px — nav en mode ${navBurger ? "burger" : "liens"}`,
+    navBurger
       ? state.desktopLinks === "none" && state.burger !== "none"
       : state.desktopLinks !== "none" && state.burger === "none",
     `liens=${state.desktopLinks} burger=${state.burger}`,

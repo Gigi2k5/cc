@@ -2,6 +2,7 @@ import { Section } from "@/components/layout/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { GradientText } from "@/components/ui/GradientText";
 import { Reveal } from "@/components/ui/Reveal";
+import { SectionTitle } from "@/components/ui/SectionTitle";
 import { DEUX_POUR_UN } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
@@ -31,12 +32,9 @@ export function DeuxPourUn() {
 
         <Reveal>
           <Eyebrow>{DEUX_POUR_UN.eyebrow}</Eyebrow>
-          <h2
-            id="deux-pour-un-title"
-            className="mt-6 font-impact text-[clamp(2rem,4.5vw,3.25rem)] leading-[1.1]"
-          >
+          <SectionTitle id="deux-pour-un-title" className="mt-6">
             {DEUX_POUR_UN.title}
-          </h2>
+          </SectionTitle>
           <p className="mt-5 max-w-[34rem] text-[1.0625rem] leading-[1.7] text-gris">
             {DEUX_POUR_UN.body}
           </p>
@@ -91,9 +89,7 @@ function Block({
     <div
       className={cn(
         "h-full rounded-sm border p-7 sm:p-8",
-        highlight
-          ? "border-rouge bg-rouge/4"
-          : "border-ligne bg-surface-2",
+        highlight ? "border-rouge bg-rouge/4" : "border-ligne bg-surface-2",
       )}
     >
       <p

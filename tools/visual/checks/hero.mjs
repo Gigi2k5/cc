@@ -104,7 +104,12 @@ const content = await ev(`(() => {
     italic: !!h1.querySelector("em"),
     typeChars: getComputedStyle(sec.querySelector(".terminal-type")).getPropertyValue("--type-chars").trim(),
     caret: !!sec.querySelector(".terminal-caret"),
-    ctas: [...sec.querySelectorAll("a[href*='wa.me'], a[href*='chat.whatsapp']")].map(a => a.textContent.trim()),
+    /* La bande d'annonce de l'édition est exclue : tant qu'aucune billetterie
+       n'est ouverte, elle pointe elle aussi vers le groupe WhatsApp et serait
+       comptée comme un troisième CTA. Elle se reconnaît à son halo. */
+    ctas: [...sec.querySelectorAll("a[href*='wa.me'], a[href*='chat.whatsapp']")]
+      .filter(a => !a.classList.contains("glow-breathe"))
+      .map(a => a.textContent.trim()),
     caption: [...sec.querySelectorAll("p")].map(p=>p.textContent.trim()).find(t => t.startsWith("la machine")),
     eyebrow: sec.querySelector("p")?.textContent.replace(/\\s+/g," ").trim(),
     canvasAria: document.querySelector("section canvas")?.closest("[aria-hidden]")?.getAttribute("aria-hidden"),

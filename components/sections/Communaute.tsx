@@ -41,34 +41,40 @@ export function Communaute() {
             Le Reveal englobant déclenche les mots, qui gardent chacun son
             délai — voir la règle descendante dans globals.css. */}
         <Reveal>
-        <h2
-          id="communaute-title"
-          aria-label={`${COMMUNAUTE.title.join(" ")} ${COMMUNAUTE.titleAccent}`}
-          className="mx-auto mt-8 max-w-[18ch] font-display text-[clamp(2.4rem,6.5vw,4.5rem)] leading-[1.05] tracking-[-0.01em]"
-        >
-          <span aria-hidden="true">
-            {words.map((word, index) => (
-              <span
-                key={`${word}-${index}`}
+          <h2
+            id="communaute-title"
+            aria-label={`${COMMUNAUTE.title.join(" ")} ${COMMUNAUTE.titleAccent}`}
+            className="mx-auto mt-8 max-w-[18ch] font-display text-[clamp(2.4rem,6.5vw,4.5rem)] leading-[1.05] tracking-[-0.01em]"
+          >
+            <span aria-hidden="true">
+              {words.map((word, index) => (
+                <span
+                  key={`${word}-${index}`}
+                  className="reveal inline-block"
+                  data-word-reveal
+                  style={
+                    {
+                      "--reveal-delay": `${index * WORD_STEP}ms`,
+                    } as CSSProperties
+                  }
+                >
+                  {word}
+                  {" "}
+                </span>
+              ))}
+              <GradientText
+                as="em"
                 className="reveal inline-block"
-                data-word-reveal
-                style={{ "--reveal-delay": `${index * WORD_STEP}ms` } as CSSProperties}
+                style={
+                  {
+                    "--reveal-delay": `${words.length * WORD_STEP}ms`,
+                  } as CSSProperties
+                }
               >
-                {word}
-                {" "}
-              </span>
-            ))}
-            <GradientText
-              as="em"
-              className="reveal inline-block"
-              style={
-                { "--reveal-delay": `${words.length * WORD_STEP}ms` } as CSSProperties
-              }
-            >
-              {COMMUNAUTE.titleAccent}
-            </GradientText>
-          </span>
-        </h2>
+                {COMMUNAUTE.titleAccent}
+              </GradientText>
+            </span>
+          </h2>
         </Reveal>
 
         <Reveal delay={260}>

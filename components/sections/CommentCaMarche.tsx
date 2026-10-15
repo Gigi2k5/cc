@@ -3,6 +3,7 @@ import { Chip } from "@/components/ui/Chip";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { GradientText } from "@/components/ui/GradientText";
 import { Reveal } from "@/components/ui/Reveal";
+import { SectionTitle } from "@/components/ui/SectionTitle";
 import { COMMENT_CA_MARCHE } from "@/lib/content";
 
 /** Trois étapes, numéros en Young Serif dégradé (accent rare, §4). */
@@ -11,12 +12,13 @@ export function CommentCaMarche() {
     <Section ariaLabelledby="comment-ca-marche-title">
       <Reveal>
         <Eyebrow>{COMMENT_CA_MARCHE.eyebrow}</Eyebrow>
-        <h2
+        <SectionTitle
           id="comment-ca-marche-title"
-          className="mt-6 font-impact text-[clamp(2.2rem,5vw,3.25rem)] leading-[1.1]"
+          level="appui"
+          className="mt-6"
         >
           {COMMENT_CA_MARCHE.title}
-        </h2>
+        </SectionTitle>
       </Reveal>
 
       <ol className="mt-14 grid gap-8 sm:grid-cols-3 sm:gap-5">

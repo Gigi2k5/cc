@@ -33,10 +33,21 @@ export const WHATSAPP = {
   },
 } as const;
 
-/** Handles à remplacer quand les comptes seront ouverts (§ points ouverts). */
+/**
+ * Comptes réseaux. Facebook et Medium restent des placeholders tant que leurs
+ * adresses exactes ne sont pas connues (§ points ouverts).
+ *
+ * L'URL Instagram est volontairement nettoyée de son paramètre de suivi
+ * (`?mdxt=…`) : ces jetons sont attachés à la session de celui qui a copié le
+ * lien, ils n'ont rien à faire dans un lien public et peuvent expirer.
+ */
 export const SOCIALS = [
   { name: "Facebook", href: "#", icon: "facebook" },
-  { name: "Instagram", href: "#", icon: "instagram" },
+  {
+    name: "Instagram",
+    href: "https://www.instagram.com/comlan_community",
+    icon: "instagram",
+  },
   { name: "Medium", href: "#", icon: "medium" },
 ] as const;
 
@@ -47,6 +58,7 @@ export const DELIVERY = "livraison : 3–5 jours ouvrés";
 export const NAV_LINKS = [
   { id: "a-propos", label: "À propos" },
   { id: "ce-quon-fait", label: "Ce qu'on fait" },
+  { id: "boutiques", label: "Boutiques" },
   { id: "communaute", label: "Communauté" },
   { id: "evenements", label: "Événements" },
   { id: "faq", label: "FAQ" },
@@ -88,44 +100,60 @@ export const A_PROPOS = {
   ],
 } as const;
 
+/**
+ * `icon` nomme une icône Lucide, au trait, plutôt qu'un emoji.
+ *
+ * Les emoji étaient le seul élément générique du site, et le seul dont le
+ * dessin change d'un appareil à l'autre — cinq glyphes de couleur au milieu
+ * d'un design system qui impose une police par rôle et des angles nets. Au
+ * trait fin et en `currentColor`, les icônes suivent la couleur de l'eyebrow,
+ * y compris son passage au rouge au survol.
+ *
+ * `specs` n'est plus jamais vide : une carte sur cinq qui portait ses
+ * caractéristiques et quatre qui finissaient sur un blanc, ça se lisait comme
+ * un gabarit inachevé. Chaque libellé ajouté est repris d'une copie déjà
+ * validée ailleurs sur le site — « surcoût = 0 » du bloc 2 pour 1, « depuis
+ * 2022 » de la bande En bref, « partie hebdo » du filigrane Communauté — et
+ * n'avance donc aucune promesse nouvelle.
+ */
 export const CE_QU_ON_FAIT = {
   eyebrow: "Ce qu'on fait",
   title: "Cinq façons de te servir.",
   cards: [
     {
       slug: "PC-sur-mesure",
-      lead: "💻",
+      icon: "laptop",
       title: "PC sur mesure",
       text: "Neuf ou reconditionné, choisi selon ton besoin et ton budget.",
       specs: ["Core i5", "16 Go", "SSD 512"],
     },
     {
       slug: "Deux-pour-un",
-      lead: "🎁",
+      icon: "gift",
       title: "2 pour 1",
       text: "Un avantage en plus à chaque pack, sans surcoût.",
-      specs: [],
+      specs: ["surcoût = 0"],
     },
     {
       slug: "Bacheliers",
-      lead: "🎓",
+      icon: "graduation",
       title: "Nouveaux bacheliers",
       text: "La bonne machine pour ta filière, avec des conseils.",
-      specs: [],
+      specs: ["conseil par filière"],
     },
     {
       slug: "Loup-Garou",
-      lead: "🐺",
+      icon: "jeu",
       title: "Univers Loup-Garou",
       text: "Le jeu communautaire de stratégie qui rassemble.",
-      specs: [],
+      specs: ["partie hebdo"],
     },
     {
       slug: "Réseau",
-      lead: "🤝",
+      icon: "reseau",
       title: "Un réseau",
       text: "Des événements qui font vivre d'autres entrepreneurs.",
-      specs: [],
+      specs: ["depuis 2022"],
     },
   ],
 } as const;
@@ -207,6 +235,12 @@ export const ALERTE = {
   /** Nom accessible du repère qui porte la bande. */
   label: "Prochaine édition",
   cta: "Réserver",
+  /**
+   * Quand la billetterie n'est pas ouverte, « Réserver » promettrait un
+   * formulaire qui n'existe pas. La bande mène alors au groupe, où la date
+   * tombera en premier.
+   */
+  ctaSansBilletterie: "En savoir plus",
   heroEyebrow: "Prochaine édition",
   /** Compte à rebours, en voix machine. */
   countdown: {
@@ -239,7 +273,7 @@ export type EvenementSpec = {
   to?: string;
 };
 
-export type Evenement = {
+type EvenementBase = {
   slug: string;
   /** Nom complet, réservé aux données structurées. */
   seoName: string;
@@ -249,19 +283,27 @@ export type Evenement = {
   alertTitle: string;
   /** Sous 640 px : la bande n'a pas la place du libellé complet. */
   alertTitleShort: string;
-  alertMeta: string;
+  alertMeta?: string;
   heroTitle: string;
   heroMeta: string;
   titleBefore: string;
   titleAccent: string;
   titleAfter: string;
   lead: string;
-  /** ISO 8601. `end` décide de la disparition de l'annonce. */
+  /**
+   * ISO 8601. `end` décide du passage dans l'historique.
+   *
+   * Quand `dateStatus` vaut `"a-confirmer"`, `start` n'est **pas** une date
+   * réelle : c'est une borne technique qui maintient l'édition du bon côté du
+   * tri tant que le mois n'est pas écoulé. Rien ne doit l'afficher ni la
+   * compter — voir `countdownLabel` et `EventJsonLd`.
+   */
   start: string;
   end: string;
   watermark: string;
   specs: readonly EvenementSpec[];
-  price: {
+  /** Absent tant que le tarif n'est pas arrêté. */
+  price?: {
     label: string;
     amount: string;
     currency: string;
@@ -269,30 +311,143 @@ export type Evenement = {
     value: number;
     code: string;
   };
-  programme: readonly string[];
-  ticket: { href: string; label: string; host: string };
-  poster: {
+  /** Absent tant que le programme n'est pas arrêté. */
+  programme?: readonly string[];
+  /** Absent tant que la billetterie n'est pas ouverte. */
+  ticket?: { href: string; label: string; host: string };
+  /** Absent tant que l'affiche n'est pas prête. */
+  poster?: {
     src: string;
     alt: string;
     width: number;
     height: number;
     caption: string;
   };
+  /** Récapitulatif d'une édition passée : galerie photo, article, album. */
+  recap?: { href: string; label: string; host: string };
+  /**
+   * Photos prises pendant la soirée. Portées par la carte de l'édition, avec
+   * un vrai texte alternatif — c'est là qu'elles sont de l'information, et non
+   * dans l'anneau décoratif de l'en-tête.
+   */
+  photos?: {
+    legende: string;
+    items: readonly { src: string; width: number; height: number }[];
+  };
 };
 
+/**
+ * Une édition est soit datée, soit annoncée au mois — et les deux cas n'ont
+ * pas les mêmes champs obligatoires.
+ *
+ * `"confirme"` : la date est arrêtée. Le compte à rebours tourne et l'édition
+ * entre dans les données structurées.
+ *
+ * `"a-confirmer"` : seul le mois est connu. Ni compte à rebours, ni `startDate`
+ * déclarée — on n'annonce pas une date qu'on n'a pas. En contrepartie, le
+ * libellé de repli devient **obligatoire** : c'est le type qui empêche
+ * d'ajouter une édition sans date en laissant un trou dans la bande et dans
+ * le hero.
+ */
+export type Evenement =
+  | (EvenementBase & { dateStatus: "confirme" })
+  | (EvenementBase & {
+      dateStatus: "a-confirmer";
+      /** À la place du compte à rebours : le mois, en capitales mono. */
+      countdownFallback: string;
+      /** Le même, tel qu'une synthèse vocale doit l'entendre. */
+      countdownFallbackSpoken: string;
+    });
+
 export const EVENEMENTS = {
-  eyebrow: "Événements",
+  eyebrow: "Nos événements",
   title: "Ce qui se passe bientôt.",
   /** Le lieu n'est pas public : position assumée, pas un oubli. */
   place: "Lieu communiqué aux inscrits",
   secondaryCta: "Une question ? WhatsApp",
   ticketPrefix: "billetterie :",
+  recapPrefix: "récap :",
+  /** Chapeau du bloc des éditions à venir. */
+  upcomingBadge: "[ À VENIR ]",
   /** Affiché quand plus aucune édition n'est à venir — jamais une section vide. */
   empty: {
     title: "La prochaine édition se prépare.",
     body: "Les prochaines éditions s'annoncent d'abord dans le groupe WhatsApp.",
   },
+  /** Bloc d'historique. Il reste affiché même quand une édition est à venir. */
+  past: {
+    heading: "Éditions passées",
+    badge: "[ PASSÉE ]",
+    /** Une édition passée ne disparaît jamais : elle change seulement de bloc. */
+    note: "Les éditions passées restent ici. Les photos s'ajoutent après coup.",
+    /* « 8 photos » : le nombre est calculé, jamais écrit en dur — une photo
+       ajoutée ne doit pas laisser un compte faux derrière elle. */
+    photosPrefix: "coin photo —",
+    photoAlt: "Portrait pris au coin photo de la 3e édition présentiel.",
+  },
+  /**
+   * L'anneau d'images derrière l'en-tête de section.
+   *
+   * Il mêle les affiches des campagnes et les portraits du **coin photo** de
+   * la 3ᵉ édition — le coin photo était au programme de la soirée, ces visages
+   * sont donc la soirée elle-même. C'est ce qui fait la différence entre un
+   * décor et une mémoire : l'anneau montre ce qui s'est réellement passé.
+   *
+   * Le bloc qui le porte est `aria-hidden` : treize images sans rôle
+   * individuel n'ont rien à annoncer une par une. Les mêmes photos sont
+   * reprises, elles, avec un vrai texte alternatif, dans la carte de l'édition
+   * passée — c'est là qu'elles sont de l'information.
+   *
+   * L'ordre alterne volontairement portraits et affiches : deux portraits
+   * voisins sur l'anneau se lisent comme une planche contact, pas comme une
+   * constellation.
+   */
+  orbite: [
+    { src: "/evenements/orbite/edition-3-rouge.jpeg", width: 864, height: 1080 },
+    { src: "/evenements/photos/coin-photo-01.jpg", width: 720, height: 1280 },
+    { src: "/evenements/orbite/loup-garou-presidentiel-1.jpeg", width: 720, height: 1080 },
+    { src: "/evenements/photos/coin-photo-02.jpg", width: 720, height: 1280 },
+    { src: "/evenements/photos/coin-photo-03.jpg", width: 720, height: 1280 },
+    { src: "/evenements/orbite/minora-presidentiel.jpeg", width: 720, height: 1080 },
+    { src: "/evenements/photos/coin-photo-04.jpg", width: 720, height: 1280 },
+    { src: "/evenements/orbite/loup-garou-whatsapp.jpeg", width: 890, height: 1080 },
+    { src: "/evenements/photos/coin-photo-05.jpg", width: 720, height: 1280 },
+    { src: "/evenements/photos/coin-photo-06.jpg", width: 720, height: 1280 },
+    { src: "/evenements/orbite/loup-garou-presidentiel-2.jpeg", width: 720, height: 960 },
+    { src: "/evenements/photos/coin-photo-07.jpg", width: 720, height: 1280 },
+    { src: "/evenements/photos/coin-photo-08.jpg", width: 720, height: 1280 },
+  ],
   items: [
+    {
+      slug: "edition-4-game-party",
+      seoName: "Comlan Community — 4e édition Game Party",
+      badge: "[ 4E ÉDITION · GAME PARTY ]",
+      dateShort: "12.26",
+      alertTitle: "4E ÉDITION GAME PARTY",
+      alertTitleShort: "4E ÉDITION",
+      heroTitle: "4ᵉ édition Game Party",
+      heroMeta: "décembre 2026 · date à confirmer",
+      titleBefore: "En décembre, on remet",
+      titleAccent: "le couvert",
+      titleAfter: ".",
+      lead: "La 4ᵉ édition se prépare. La date se confirme bientôt.",
+      /* Bornes techniques, pas une date annoncée : voir `dateStatus`. Le jour
+         où la date tombe, ces deux champs et `dateStatus` suffisent — le
+         compte à rebours, la bande et les données structurées se rallument
+         seuls. */
+      start: "2026-12-01T00:00:00+01:00",
+      end: "2026-12-31T23:59:59+01:00",
+      dateStatus: "a-confirmer",
+      countdownFallback: "DÉCEMBRE 2026",
+      countdownFallbackSpoken: "en décembre 2026",
+      watermark: "12.2026",
+      specs: [
+        { label: "[ DATE ]", value: "décembre 2026 · à confirmer" },
+        { label: "[ LIEU ]", value: "communiqué aux inscrits" },
+      ],
+      /* Ni tarif, ni programme, ni billetterie : rien n'est arrêté. Les
+         champs restent absents plutôt que remplis d'approximations. */
+    },
     {
       slug: "edition-3-presentiel",
       seoName: "Comlan Community — 3e édition présentiel",
@@ -309,6 +464,7 @@ export const EVENEMENTS = {
       lead: "Une soirée pensée pour durer jusqu'à minuit.",
       start: "2026-09-05T15:00:00+01:00",
       end: "2026-09-06T00:00:00+01:00",
+      dateStatus: "confirme",
       watermark: "05.09.2026",
       specs: [
         { label: "[ DATE ]", value: "samedi 5 septembre 2026" },
@@ -344,8 +500,110 @@ export const EVENEMENTS = {
         height: 1080,
         caption: "affiche officielle · 3e édition",
       },
+      photos: {
+        legende: "au coin photo de la soirée",
+        items: [
+          { src: "/evenements/photos/coin-photo-01.jpg", width: 720, height: 1280 },
+          { src: "/evenements/photos/coin-photo-02.jpg", width: 720, height: 1280 },
+          { src: "/evenements/photos/coin-photo-03.jpg", width: 720, height: 1280 },
+          { src: "/evenements/photos/coin-photo-04.jpg", width: 720, height: 1280 },
+          { src: "/evenements/photos/coin-photo-05.jpg", width: 720, height: 1280 },
+          { src: "/evenements/photos/coin-photo-06.jpg", width: 720, height: 1280 },
+          { src: "/evenements/photos/coin-photo-07.jpg", width: 720, height: 1280 },
+          { src: "/evenements/photos/coin-photo-08.jpg", width: 720, height: 1280 },
+        ],
+      },
     },
   ] satisfies readonly Evenement[],
+} as const;
+
+/* --------------------------------------------------------------------------
+   Boutiques — les vitrines e-commerce réelles.
+
+   Les URL sont exactes et vérifiées (HTTP 200). Les captures sont produites
+   par tools/visual/shoot-boutiques.mjs, jamais prises à la main : une capture
+   manuelle embarque la barre d'onglets de celui qui la prend.
+
+   Ajouter une boutique = ajouter une entrée, plus son slug dans le script de
+   capture. La bande s'adapte d'elle-même.
+   -------------------------------------------------------------------------- */
+
+export type Boutique = {
+  slug: string;
+  name: string;
+  /** Forme courte pour la bande, qui tient sur une ligne en mono. */
+  shortName: string;
+  /** Domaine affiché sous le bouton : on annonce où mène le clic. */
+  host: string;
+  href: string;
+  description: string;
+  /** Mention de la place de marché hôte, quand la boutique en dépend. */
+  note?: string;
+  shots: {
+    desktop: { src: string; width: number; height: number };
+    mobile: { src: string; width: number; height: number };
+    alt: string;
+  };
+};
+
+export const BOUTIQUES = {
+  eyebrow: "Nos boutiques",
+  title: "Deux vitrines, un seul interlocuteur.",
+  body: "Le catalogue est en ligne et à jour. Le conseil, lui, reste sur WhatsApp.",
+  cta: "Visiter la boutique",
+  hostPrefix: "boutique :",
+  /** Nom accessible de la bande de sélection. */
+  bandLabel: "Choisir une boutique",
+  items: [
+    {
+      slug: "comlan-pc-solutions",
+      /* Espace insécable avant la barre : sans elle, le retour à la ligne la
+         rejette en tête de seconde ligne (« | PC & Solutions »), ce qui se lit
+         comme une puce de liste. Elle reste ainsi collée à « Community ». */
+      name: "Comlan Community | PC & Solutions",
+      shortName: "PC & SOLUTIONS",
+      host: "comlan-community-pc-solutions.biggigui.com",
+      href: "https://comlan-community-pc-solutions.biggigui.com/",
+      description:
+        "La vitrine officielle : PC neufs et reconditionnés, choisis pour tes études, ton travail, ta création ou le gaming. Chaque fiche porte sa configuration et son prix.",
+      note: "hébergée sur la place de marché Biggigui",
+      shots: {
+        desktop: {
+          src: "/boutiques/comlan-pc-solutions-desktop.webp",
+          width: 1440,
+          height: 900,
+        },
+        mobile: {
+          src: "/boutiques/comlan-pc-solutions-mobile.webp",
+          width: 780,
+          height: 1688,
+        },
+        alt: "Page d'accueil de la boutique Comlan Community | PC & Solutions, avec sa grille de PC portables et leurs prix.",
+      },
+    },
+    {
+      slug: "2g-hub",
+      name: "2G HUB",
+      shortName: "2G HUB",
+      host: "2ghub.tech",
+      href: "https://2ghub.tech/computers",
+      description:
+        "Notre seconde vitrine, sur sa propre boutique. Le rayon ordinateurs y rassemble les machines disponibles tout de suite, avec panier et commande en ligne.",
+      shots: {
+        desktop: {
+          src: "/boutiques/2g-hub-desktop.webp",
+          width: 1440,
+          height: 900,
+        },
+        mobile: {
+          src: "/boutiques/2g-hub-mobile.webp",
+          width: 780,
+          height: 1688,
+        },
+        alt: "Rayon ordinateurs de la boutique 2G HUB, avec les PC portables disponibles et leurs prix.",
+      },
+    },
+  ] satisfies readonly Boutique[],
 } as const;
 
 export const FAQ = {
@@ -401,6 +659,7 @@ export const FOOTER_COLUMNS = [
     links: [
       { label: "À propos", href: "#a-propos" },
       { label: "Ce qu'on fait", href: "#ce-quon-fait" },
+      { label: "Boutiques", href: "#boutiques" },
       { label: "Communauté", href: "#communaute" },
       { label: "FAQ", href: "#faq" },
     ],

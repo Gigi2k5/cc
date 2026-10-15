@@ -1,5 +1,6 @@
 import { SectionRule } from "@/components/layout/SectionRule";
 import { APropos } from "@/components/sections/APropos";
+import { Boutiques } from "@/components/sections/Boutiques";
 import { CeQuOnFait } from "@/components/sections/CeQuOnFait";
 import { CommentCaMarche } from "@/components/sections/CommentCaMarche";
 import { Communaute } from "@/components/sections/Communaute";
@@ -9,6 +10,7 @@ import { EnBref } from "@/components/sections/EnBref";
 import { Evenements } from "@/components/sections/Evenements";
 import { Faq } from "@/components/sections/Faq";
 import { Hero } from "@/components/sections/Hero";
+import { WHATSAPP } from "@/lib/content";
 import {
   countdownLabel,
   countdownSpoken,
@@ -29,11 +31,17 @@ export default function Home() {
   const [prochain] = upcomingEvenements();
   const evenement = prochain
     ? {
-        countdown: countdownLabel(prochain),
+        /* Pas de date arrêtée, pas de compte à rebours : `countdownLabel`
+           renverrait le mois, qui n'a rien à faire dans l'emplacement réservé
+           au décompte. La voix, elle, le dit — « en décembre 2026 ». */
+        countdown:
+          prochain.dateStatus === "confirme" ? countdownLabel(prochain) : null,
         countdownSpoken: countdownSpoken(prochain),
         title: prochain.heroTitle,
         meta: prochain.heroMeta,
-        href: prochain.ticket.href,
+        /* Pas de billetterie ouverte : le hero renvoie au groupe, comme la
+           bande d'annonce. Voir AlertBar. */
+        href: prochain.ticket?.href ?? WHATSAPP.group.href,
       }
     : null;
 
@@ -46,6 +54,10 @@ export default function Home() {
       <CeQuOnFait />
       <SectionRule />
       <DeuxPourUn />
+      {/* L'entonnoir : ce qu'on fait → l'avantage → OÙ acheter → comment ça
+          marche. Les boutiques se placent donc avant le mode d'emploi, pas
+          après. */}
+      <Boutiques />
       <SectionRule />
       <CommentCaMarche />
       <Communaute />

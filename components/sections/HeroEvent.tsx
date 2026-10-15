@@ -2,7 +2,8 @@ import { GradientText } from "@/components/ui/GradientText";
 import { ALERTE } from "@/lib/content";
 
 export type HeroEventData = {
-  countdown: string;
+  /** `null` quand la date n'est pas arrêtée : voir le commentaire du rendu. */
+  countdown: string | null;
   /** Forme entendue du compte à rebours : « dans 16 jours », pas « J−16 ». */
   countdownSpoken: string;
   title: string;
@@ -34,9 +35,20 @@ export function HeroEvent({ event }: { event: HeroEventData }) {
       aria-label={`${ALERTE.heroEyebrow} : ${event.title}, ${event.meta}, ${event.countdownSpoken}.`}
       className="group glow-breathe mt-7 hidden items-center gap-5 rounded-sm border border-rouge bg-rouge/4 px-6 py-4 transition-[border-color,translate,background-color] duration-[var(--duration-standard)] ease-standard hover:-translate-y-0.5 hover:bg-rouge/8 lg:flex"
     >
-      <GradientText aria-hidden className="shrink-0 font-accent text-[2rem] leading-none">
-        {event.countdown}
-      </GradientText>
+      {/* Le grand emplacement est fait pour un compte à rebours — un nombre
+          court, en Young Serif de 32px. Quand la date n'est pas arrêtée il n'y
+          a pas de nombre : y loger « DÉCEMBRE 2026 » mangeait la largeur de la
+          bande et tronquait la ligne de titre juste à côté (mesuré : 81px
+          coupés à 1440px). Le mois se dit alors dans la ligne de méta, qui est
+          faite pour ça. */}
+      {event.countdown ? (
+        <GradientText
+          aria-hidden
+          className="shrink-0 font-accent text-[2rem] leading-none"
+        >
+          {event.countdown}
+        </GradientText>
+      ) : null}
 
       <span aria-hidden="true" className="min-w-0">
         <span className="flex items-center gap-2 font-mono text-[0.5625rem] tracking-[0.2em] text-rouge uppercase">

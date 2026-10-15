@@ -263,12 +263,18 @@ check(
   links.unsafe.length === 0,
   `${links.externalCount} externes · ${links.unsafe.length} à risque`,
 );
-/* Le site n'envoie ailleurs que vers WhatsApp et vers la billetterie de la
-   section Événements. Toute autre destination est un accident : cette
-   assertion est là pour le voir tout de suite. */
+/* Le site n'envoie ailleurs que vers WhatsApp, la billetterie de la section
+   Événements, et les deux boutiques. Toute autre destination est un accident :
+   cette assertion est là pour le voir tout de suite.
+
+   Les deux boutiques sont listées par leur domaine exact et non par un motif
+   large : c'est précisément ce qui ferait tomber ce test si quelqu'un
+   remplaçait une URL de boutique par une autre. */
 check(
-  "aucune sortie du site hors WhatsApp et billetterie",
-  links.hrefs.every((h) => /wa\.me|chat\.whatsapp|tike229\.ghinel\.com/.test(h)),
+  "aucune sortie du site hors WhatsApp, billetterie et boutiques",
+  links.hrefs.every((h) =>
+    /wa\.me|chat\.whatsapp|tike229\.ghinel\.com|comlan-community-pc-solutions\.biggigui\.com|2ghub\.tech|instagram\.com\/comlan_community/.test(h),
+  ),
   links.hrefs.join(" "),
 );
 check(
@@ -276,10 +282,18 @@ check(
   links.deadAnchors.length === 0,
   links.deadAnchors.length ? links.deadAnchors.join(" ") : "aucune ancre morte",
 );
+/* Instagram est branché sur le vrai compte ; Facebook et Medium restent en
+   attente de leurs adresses. Le compte descendra à zéro quand les deux
+   derniers seront connus — ce test est là pour qu'on ne les oublie pas. */
 check(
-  "réseaux encore en placeholder (attendu)",
-  links.placeholders === 6,
-  `${links.placeholders} liens « # » (3 en contact + 3 en footer)`,
+  "réseaux encore en placeholder (attendu : Facebook et Medium)",
+  links.placeholders === 4,
+  `${links.placeholders} liens « # » (2 en contact + 2 en footer)`,
+);
+check(
+  "Instagram pointe sur le vrai compte, sans paramètre de suivi",
+  links.hrefs.some((h) => h === "https://www.instagram.com/comlan_community"),
+  links.hrefs.filter((h) => h.includes("instagram")).join(" ") || "absent",
 );
 
 /* ------------------------------------------------------------- MOBILE */

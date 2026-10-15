@@ -1,4 +1,5 @@
-import { ALERTE } from "@/lib/content";
+import { ALERTE, WHATSAPP } from "@/lib/content";
+import { cn } from "@/lib/utils";
 import {
   countdownLabel,
   countdownSpoken,
@@ -28,17 +29,24 @@ export function AlertBar() {
   if (!event) return null;
 
   const countdown = countdownLabel(event);
+
+  /* Sans billetterie ouverte, la bande mène au groupe WhatsApp : c'est là que
+     la date et les inscriptions tomberont. Le libellé suit — annoncer
+     « Réserver » pour aboutir à une conversation serait une promesse en l'air. */
+  const destination = event.ticket?.href ?? WHATSAPP.group.href;
+  const cta = event.ticket ? ALERTE.cta : ALERTE.ctaSansBilletterie;
+  const dateFerme = event.dateStatus === "confirme";
   /* La bande porte deux formes du titre — longue et courte — dont une seule est
      affichée selon la largeur. Les deux restent dans le DOM, donc sans ce nom
      accessible explicite un lecteur d'écran annoncerait le titre DEUX fois.
      Le visuel devient décoratif et cette phrase dit tout, une fois, et mieux :
      « dans 16 jours » plutôt que « J moins 16 ». */
-  const nomAccessible = `${ALERTE.label} : ${event.heroTitle}, ${event.heroMeta}, ${countdownSpoken(event)}. ${ALERTE.cta}.`;
+  const nomAccessible = `${ALERTE.label} : ${event.heroTitle}, ${event.heroMeta}, ${countdownSpoken(event)}. ${cta}.`;
 
   return (
     <aside aria-label={ALERTE.label} className="relative z-50 bg-craie text-encre">
       <a
-        href={event.ticket.href}
+        href={destination}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={nomAccessible}
@@ -72,22 +80,42 @@ export function AlertBar() {
             {event.alertTitleShort}
           </span>
           <span className="hidden min-w-0 truncate sm:inline">{event.alertTitle}</span>
-          <span aria-hidden="true" className="hidden shrink-0 text-encre/45 sm:inline">
-            ·
-          </span>
-          <span className="hidden shrink-0 text-encre/70 sm:inline">
-            {event.alertMeta}
-          </span>
+          {/* Le point médian n'existe que s'il a quelque chose à séparer :
+              une édition sans métadonnée arrêtée (places, tarif) laisserait
+              sinon un séparateur orphelin au milieu de la bande. */}
+          {event.alertMeta ? (
+            <>
+              <span aria-hidden="true" className="hidden shrink-0 text-encre/45 sm:inline">
+                ·
+              </span>
+              <span className="hidden shrink-0 text-encre/70 sm:inline">
+                {event.alertMeta}
+              </span>
+            </>
+          ) : null}
         </span>
 
         <span aria-hidden="true" className="ml-auto flex shrink-0 items-center gap-2.5 sm:gap-5">
           {/* Le compte à rebours reste visible même sur le plus petit écran :
-              c'est lui qui crée l'urgence. */}
-          <span className="font-mono text-[0.625rem] font-medium tracking-[0.1em] sm:text-xs sm:tracking-[0.16em]">
+              c'est lui qui crée l'urgence.
+
+              Sauf quand il n'y en a pas. Sans date arrêtée, ce qui s'affiche
+              ici est le mois — « DÉCEMBRE 2026 », quatre fois plus large qu'un
+              « J−16 ». Mesuré à 320px : il venait se poser sur la pastille
+              « [ 12.26 ] » (8×13px de recouvrement) et rognait 64px du titre à
+              360px. Or la pastille dit DÉJÀ le mois : le répéter coûtait la
+              place du titre pour zéro information. Il réapparaît à 640px, où
+              la bande a de quoi le porter. */}
+          <span
+            className={cn(
+              "font-mono text-[0.625rem] font-medium tracking-[0.1em] sm:text-xs sm:tracking-[0.16em]",
+              dateFerme ? "" : "hidden sm:inline",
+            )}
+          >
             {countdown}
           </span>
           <span className="flex items-center gap-1.5 rounded-pill bg-accent-grad px-3 py-1.5 font-sans text-[0.6875rem] font-semibold text-white sm:px-4 sm:py-2 sm:text-[0.8125rem]">
-            {ALERTE.cta}
+            {cta}
             <span
               aria-hidden="true"
               className="hidden transition-transform duration-[var(--duration-standard)] ease-standard group-hover:translate-x-0.5 sm:inline"

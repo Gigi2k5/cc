@@ -18,6 +18,20 @@ export function upcomingEvenements(now = Date.now()): readonly Evenement[] {
     .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 }
 
+/**
+ * Les éditions déjà passées, la plus récente en premier.
+ *
+ * Strict complément d'`upcomingEvenements` sur la même borne `end` : aucune
+ * édition ne peut tomber dans les deux listes, ni dans aucune. Une soirée ne
+ * disparaît donc jamais du site — elle change de bloc, et c'est tout ce qui se
+ * passe le lendemain, sans que personne ne redéploie.
+ */
+export function pastEvenements(now = Date.now()): readonly Evenement[] {
+  return EVENEMENTS.items
+    .filter((item) => new Date(item.end).getTime() <= now)
+    .sort((a, b) => new Date(b.start).getTime() - new Date(a.start).getTime());
+}
+
 /** Bénin : UTC+1 toute l'année, sans heure d'été. */
 const BENIN_OFFSET_MS = 3_600_000;
 const DAY_MS = 86_400_000;
@@ -44,6 +58,11 @@ export function daysUntil(iso: string, now = Date.now()): number {
  * navigateur ne recalcule rien, donc rien ne peut diverger du HTML servi.
  */
 export function countdownLabel(event: Evenement, now = Date.now()): string {
+  /* Date non arrêtée : `start` n'est qu'une borne de tri. Compter les jours
+     qui en séparent reviendrait à annoncer une date qu'on n'a pas. On affiche
+     le mois, qui est la seule chose vraie. */
+  if (event.dateStatus === "a-confirmer") return event.countdownFallback;
+
   if (now >= new Date(event.start).getTime()) return ALERTE.countdown.ongoing;
 
   const days = daysUntil(event.start, now);
@@ -58,6 +77,8 @@ export function countdownLabel(event: Evenement, now = Date.now()): string {
  * dit donc « dans 16 jours ».
  */
 export function countdownSpoken(event: Evenement, now = Date.now()): string {
+  if (event.dateStatus === "a-confirmer") return event.countdownFallbackSpoken;
+
   if (now >= new Date(event.start).getTime()) return "en cours";
 
   const days = daysUntil(event.start, now);

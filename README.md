@@ -43,16 +43,19 @@ npm run check:shell       # nav sticky, scroll-spy, panneau mobile, footer
 npm run check:hero        # scène 3D : draws, arrêt hors écran, reduced-motion
 npm run check:content     # fidélité de la copie au brief, révélations, survols
 npm run check:community   # section Communauté + couche réseau globale
-npm run check:evenements  # section Événements : copie, affiche, données structurées
+npm run check:evenements  # Événements : deux blocs, date à confirmer, orbite, JSON-LD
+npm run check:boutiques   # Boutiques : URL exactes, onglets, bascule mobile
 npm run check:faq         # accordéon au clavier, contact, tous les liens
 npm run check:motion      # magnétisme, spotlight, filets, cohérence motion.ts/CSS
 npm run check:touch       # ce qui doit être désactivé au doigt
 npm run check:audit       # charge utile, axe-core, sémantique, clavier, SEO
-npm run check:breakpoints # 360 / 768 / 1024 / 1440
+npm run check:breakpoints # 360 / 768 / 1024 / 1280 / 1440
 npm run check:responsive  # 320 / 360 / 390 / 414 + desktop : chevauchements,
                           #   troncatures, débordements, cibles tactiles
 npm run check:responsive:touch  # le même, en pointeur grossier
 npm run shots             # captures des sections (sans vérification)
+npm run shots:sections    # captures d'Événements et Boutiques (sans vérification)
+npm run shots:boutiques   # recapture les vitrines e-commerce (accès réseau requis)
 ```
 
 Sorties dans `tools/visual/out/` (non versionné).
@@ -69,15 +72,18 @@ app/
 components/
   layout/         Section · Container · Nav · Footer · SectionRule
   ui/             primitives du design system
-  sections/       les 10 sections de la page
+  sections/       les 11 sections de la page + l'orbite d'affiches
   three/          scène du hero, couche réseau, repli CSS
 lib/
   content.ts      TOUTE la copie française et les liens réels
   fonts.ts · motion.ts · site.ts · contrast.ts · utils.ts
-  evenements.ts   sélection des éditions à venir (la seule logique datée)
+  evenements.ts   éditions à venir / passées (la seule logique datée)
   hooks/          scroll-spy, révélation, capacité de l'appareil, pointeur…
 references/       design system + maquette validée (lecture seule)
-tools/visual/     harnais de vérification CDP
+tools/visual/     harnais de vérification CDP + capture des vitrines
+public/
+  evenements/     affiche de l'édition · orbite/ = affiches · photos/ = coin photo
+  boutiques/      captures des vitrines, bureau et téléphone
 ```
 
 ## Design system
@@ -95,109 +101,189 @@ dérivent pas.
 
 C'est le **seul contenu daté du site**, et donc le seul qui puisse vieillir mal.
 
+La section porte **deux blocs** : les éditions à venir, puis l'historique.
+Pas d'onglets — sur une page unique, le scroll *est* la navigation, et des
+onglets cacheraient la moitié de la section au visiteur comme aux moteurs.
+
 Une édition vit dans `EVENEMENTS.items` (`lib/content.ts`) avec deux bornes
-ISO, `start` et `end`. `lib/evenements.ts` ne retient que celles dont la fin
-est encore devant, la plus proche d'abord ; `app/page.tsx` porte
-`export const revalidate = 3600`. Conséquence : **le lendemain d'une soirée,
-l'annonce disparaît d'elle-même dans l'heure, sans que personne ne
-redéploie**, et la section bascule sur son état de repli — jamais un trou dans
-la page, toujours un renvoi vers le groupe WhatsApp.
+ISO, `start` et `end`. `lib/evenements.ts` expose deux fonctions strictement
+complémentaires sur la même borne `end` — `upcomingEvenements()` et
+`pastEvenements()` — donc aucune édition ne peut tomber dans les deux listes,
+ni dans aucune. `app/page.tsx` porte `export const revalidate = 3600`.
+
+Conséquence : **le lendemain d'une soirée, l'édition descend d'elle-même dans
+l'historique, dans l'heure, sans que personne ne redéploie**. Elle ne disparaît
+jamais du site : elle change de bloc. Et s'il n'y a plus rien à venir, le
+premier bloc bascule sur son état de repli — jamais un trou dans la page,
+toujours un renvoi vers le groupe WhatsApp.
 
 Ajouter une édition = ajouter une entrée dans `items`. Rien d'autre.
 
-Trois règles à ne pas perdre de vue :
+### Une édition dont la date n'est pas arrêtée
 
-- **§11 du design system.** Loup-Garou reste cadré comme jeu communautaire. Les
-  jetons sont *inclus* dans l'entrée : aucune mention de crédits à recharger,
-  de mise ou de gain en argent sur le site public. `check:evenements` échoue si
-  un de ces mots réapparaît dans la section.
-- **Le lieu n'est pas public** — position assumée (« communiqué aux inscrits »),
-  pas un oubli. Les données structurées ne déclarent donc que le pays, jamais
-  une adresse inventée.
-- **La billetterie est un domaine tiers** (`tike229.ghinel.com`). Elle est
-  annoncée en clair sous les boutons plutôt que découverte au clic, et c'est
-  la seule sortie du site hors WhatsApp — `check:faq` le vérifie.
+C'est le cas de la 4ᵉ édition : décembre 2026, jour non décidé. Le champ
+`dateStatus` porte cette distinction, et le type l'impose — `Evenement` est une
+union discriminée, si bien qu'une édition `"a-confirmer"` **ne compile pas**
+sans son libellé de repli. Impossible d'en ajouter une en laissant un trou dans
+la bande et dans le hero.
 
-L'affiche est traitée comme un **objet posé** dans un cadre à filet fin, jamais
-comme un fond : sa palette (dorés, rouge saturé) ne doit pas déborder sur celle
-du site. Toute l'information qu'elle porte existe aussi en texte réel, pour les
-lecteurs d'écran comme pour les moteurs.
+Ce qu'une date non arrêtée change, partout :
 
-### Le rendre voyant sans le rendre criard
+- la fiche affiche `décembre 2026 · à confirmer`, jamais une date inventée ;
+- **aucun compte à rebours** : `start` n'est qu'une borne de tri, en compter
+  les jours reviendrait à annoncer une date qu'on n'a pas. La bande d'annonce
+  affiche le mois, et le grand emplacement du hero — fait pour un nombre court
+  en Young Serif — reste vide plutôt que d'avaler « DÉCEMBRE 2026 » ;
+- **aucune `startDate` déclarée** en données structurées : un moteur
+  l'afficherait telle quelle ;
+- tarif, programme, affiche et billetterie sont **optionnels**. Sans affiche, la
+  fiche prend toute la largeur au lieu de réserver une colonne vide ; sans
+  billetterie, le CTA mène au groupe WhatsApp et la bande cesse de promettre
+  « Réserver ».
 
-Une section au 7ᵉ écran ne sert à rien : quelqu'un qui arrive par WhatsApp,
-regarde le hero et repart n'a jamais su qu'il y avait une soirée. Trois niveaux
-répondent à ça, tous alimentés par `upcomingEvenements()` — ils s'allument et
-s'éteignent ensemble.
+Le jour où la date tombe : trois champs changent, et le compte à rebours, la
+bande et les données structurées se rallument seuls.
 
-1. **La bande d'annonce** (`components/layout/AlertBar.tsx`), tout en haut,
-   avant le logo. **Le levier retenu n'est pas le rouge, c'est l'inversion** :
-   sur un site intégralement quasi-noir, un aplat craie est ce qu'on peut faire
-   de plus voyant — et ça ne consomme rien du capital d'accent, que §3 réserve
-   à un ou deux mots par écran. C'est une exception assumée à « sombre
-   partout », arbitrée pour ça et pour rien d'autre. Le seul rouge y est la
-   pastille et la pilule de réservation. La bande **entière** est le lien : un
-   seul arrêt clavier, et une cible tactile de sa hauteur complète.
-2. **Le bloc compte à rebours du hero** (`components/sections/HeroEvent.tsx`),
-   dernier de la chorégraphie de chargement, avec un halo qui respire. Reprend
-   le traitement du bloc `[ TOTAL ]` de la section 2-pour-1. Desktop seulement :
-   le hero mobile tient déjà tout juste en une hauteur d'écran, et là-bas c'est
-   la bande qui porte l'annonce. **Ce n'est pas un dispositif au-dessus de la
-   ligne de flottaison** — voir la mesure plus bas.
-3. **La pastille sur le lien « Événements »** de la nav, pour ceux qui balaient
-   la navigation sans lire le hero.
+### L'anneau d'images
 
-Trois points qui ont demandé un arbitrage :
+L'en-tête de section est un **anneau** : treize visuels posés sur un cercle,
+le titre au centre. Les affiches des campagnes y alternent avec les portraits
+du **coin photo** de la 3ᵉ édition — le coin photo était au programme de la
+soirée, ces visages sont donc la soirée elle-même.
 
-- **Pas de texte défilant.** Un ruban aurait été plus voyant encore, mais il
-  aurait déclenché le WCAG 2.2.2 et obligé à fournir un bouton pause. Le seul
-  mouvement est une pastille décorative — et elle reste **visible** en
-  animations réduites, ce qui demande une règle explicite (même piège que le
-  caret du hero).
-- **Ni pop-up ni cookie.** Rien à fermer, donc rien à mémoriser : le dispositif
-  disparaît de lui-même. Le site n'écrit toujours aucune donnée.
-- **La bande n'est pas collante**, et c'est un choix reconduit. La rendre
-  collante coûterait 48 px de chaque écran en permanence : sur un 360×640 —
-  taille Android courante — la bande plus la nav confisqueraient 112 px, soit
-  17 % de l'écran, pour toute la visite. La pastille sur « Événements » dans la
-  nav est déjà le rappel persistant, et elle ne coûte rien.
-- **`--alert-h`**, déclaré dans `globals.css` et basculé par un `data-alert`
-  sur le `body`, vaut 0 le reste de l'année. Le hero le retranche de sa hauteur
-  utile : sans ça la bande pousserait son bas sous la ligne de flottaison.
+Le centre vide est tout l'intérêt de la forme. La version précédente dispersait
+les affiches *derrière* le texte, ce qui obligeait à les voiler pour garder le
+titre lisible — donc à les rendre invisibles, ce qui était le reproche. Un
+anneau n'a rien derrière le texte : le titre se pose sur l'encre pure, et les
+images peuvent être montrées franchement, sans voile ni désaturation.
+`check:evenements` mesure ce vide (≥ 180 px libres au centre) : si l'anneau se
+resserrait, le contraste du titre redeviendrait une loterie.
 
-#### Le bloc du hero contre la ligne de flottaison
+La géométrie vit dans `globals.css` (`.photo-ring`), pas en JavaScript — c'est
+une chaîne de transformations CSS, et le composant reste rendu côté serveur :
 
-Bas du bloc contre la hauteur de fenêtre, mesuré sur le build de production :
+```
+translate(-50%,-50%)   centre la carte
+rotate(var(--a))       position angulaire
+translateY(-r)         sur le cercle
+rotate(-a * 0.72)      redressement partiel
+```
 
-| Fenêtre | Bas du bloc | Marge |
-|---|---|---|
-| 1280×720 | 897 px | −177 px |
-| 1366×768 | 902 px | −134 px |
-| 1440×800 | 906 px | −106 px |
-| 1512×850 | 911 px | −61 px |
-| 1440×900 | 906 px | −6 px |
-| 1920×1080 | 950 px | +130 px |
+**Ce dernier facteur est le seul réglage qui compte.** À 0, les cartes restent
+tangentes au cercle : joli sur des images abstraites, mais nos portraits se
+retrouvent la tête en bas dans toute la moitié basse. À 1, tout est droit et
+l'anneau devient une grille circulaire sans vie. À 0,72, l'inclinaison suit le
+cercle et aucun visage ne dépasse ~25°.
 
-Le bloc n'est donc entier au-dessus de la ligne de flottaison qu'à partir de
-~910 px de fenêtre. **Décision : on le garde tel quel, et on cesse de le
-présenter comme un dispositif d'accueil.**
+Pour la même raison, l'anneau **ne tourne pas** : il respire de ±5° sur 30 s.
+Un tour complet finit toujours par renverser les visages, quel que soit le
+redressement.
 
-La colonne de texte du hero fait 688 px à elle seule, et le hero mesure 841 à
-948 px selon la largeur : il a **toujours** dépassé l'écran sur toutes ces
-fenêtres — un `min-h` est un plancher, pas un plafond. Le bloc est le dernier
-temps du hero, pas un badge. Le faire tenir à 768 px demanderait de retirer
-~135 px à la composition, c'est-à-dire de rogner le `h1` ou le rythme des CTA :
-on échangerait l'atout le plus fort de la page contre la quatrième mention du
-même événement dans le même écran. Et sur desktop l'annonce est **déjà**
-imratable à l'arrivée — la bande craie est à `y=0`, avant le logo, sur toutes
-les fenêtres. Rogner 14 px de padding du hero ferait passer la seule bande
-900 px au-dessus du pli : un gain d'une classe de fenêtre contre une retouche
-de la composition signature. Non.
+Le rayon et la taille des cartes sont des variables réglées par palier (320 /
+390 / 640 / 1024 / 1280 px) : aucune position n'est réécrite. Au-dessus de
+1024 px le titre se tient au centre ; en dessous le centre ne fait plus que
+~210 px et le titre passe sous l'anneau, les deux centrés.
 
-Le compte à rebours est calculé côté serveur, en jours calendaires du Bénin :
-« J−16 », puis « DEMAIN », « AUJOURD'HUI » et « EN COURS » pendant la soirée.
-Il est doublé d'une forme parlée — un lecteur d'écran entend « dans 16 jours »
-et non « J moins 16 ».
+Le bloc est `aria-hidden` : treize images sans rôle individuel n'ont rien à
+annoncer une par une.
+
+### Les photos du coin photo
+
+Les mêmes huit portraits reviennent dans la carte de l'édition passée — et là,
+ils portent un vrai texte alternatif, situé et numéroté (« Portrait pris au coin
+photo de la 3ᵉ édition présentiel. 3 sur 8. »). C'est la distinction qui compte :
+dans l'anneau ils sont du décor, dans la carte ils sont de l'information.
+
+Le nombre affiché est **compté**, jamais écrit en dur : une photo ajoutée ne
+doit pas laisser un compte faux derrière elle. `check:evenements` le vérifie.
+
+Ajouter des photos à une édition = une entrée `photos` dans `items`.
+
+## Boutiques
+
+Deux vitrines e-commerce, dans `BOUTIQUES` (`lib/content.ts`) :
+
+| Boutique | URL |
+|---|---|
+| Comlan Community \| PC & Solutions | `comlan-community-pc-solutions.biggigui.com` (place de marché Biggigui) |
+| 2G HUB | `2ghub.tech/computers` |
+
+Comme pour la billetterie, **le domaine est annoncé en clair sous le bouton**
+plutôt que découvert au clic. `check:boutiques` compare les URL à celles du
+brief, recopiées dans le test : remplacer un lien dans `lib/content.ts` fait
+tomber la vérification au lieu de passer inaperçu.
+
+### Les captures ne se prennent pas à la main
+
+`npm run shots:boutiques` pilote un Chrome au profil vide, en 1440×900 et
+390×844, et écrit dans `public/boutiques/`. Ce n'est pas du confort : une
+capture prise à la main embarque la barre d'onglets de celui qui la prend —
+messagerie, webmail, comptes ouverts — et publie ces informations privées sur
+le site. Le script ne capture qu'après avoir attendu que chaque `<img>` soit
+complète, et après un aller-retour de défilement qui déclenche les chargements
+différés (sans lui, le bandeau de Biggigui reste un aplat gris).
+
+### Deux présentations, une seule source
+
+Au-dessus de 640 px : une boutique à la fois, choisie dans une bande de deux
+tuiles. Statique — avec deux boutiques, un carrousel serait du mouvement sans
+information, et dupliquer les entrées pour « remplir » est exclu. La bande est
+un vrai `tablist` (`aria-selected`, flèches clavier), au même motif WAI que
+l'accordéon de la FAQ.
+
+En dessous de 640 px : **pas d'onglets**. Les deux boutiques s'empilent,
+chacune complète. Cacher une boutique sur deux derrière un appui, sur un écran
+de 360 px, ne fait économiser aucun défilement.
+
+La pièce délicate est là, et elle mérite d'être comprise avant d'y toucher :
+
+- la **visibilité** est pilotée par CSS seul (`sm:hidden` sur les panneaux non
+  sélectionnés), donc elle est juste dès le rendu serveur, avant toute
+  hydratation ;
+- seules les **étiquettes ARIA** suivent `matchMedia`, parce qu'une media query
+  ne peut pas les conditionner. Annoncer un `tabpanel` dont l'onglet n'est pas
+  affiché ferait mentir l'arbre d'accessibilité.
+
+`check:boutiques` vérifie les deux présentations et leur sémantique, à 1440,
+390 et 320 px.
+
+Ajouter une boutique = une entrée dans `BOUTIQUES.items` et un slug dans
+`tools/visual/shoot-boutiques.mjs`. Au-delà de trois, la bande gagnera un
+défilement horizontal — une classe conditionnelle, pas un autre système.
+
+## Hiérarchie des titres
+
+Les onze sections portaient exactement le même titre : même police, même
+`clamp`, même position en haut à gauche. Pris un par un les blocs tiennent ;
+enchaînés, la page s'aplatissait, parce que rien ne disait ce qui porte la
+proposition et ce qui l'accompagne.
+
+`components/ui/SectionTitle.tsx` porte désormais cette décision, et elle seule :
+
+- **`majeur`** (inchangé) — à propos, ce qu'on fait, le concept, les boutiques,
+  la communauté, les événements ;
+- **`appui`** (un cran en dessous) — comment ça marche, la FAQ : des sections
+  qui répondent à une question qu'on ne se pose qu'une fois convaincu.
+
+Rien d'autre ne change : ni la copie, ni la mise en page, ni la couleur. Le
+`clamp` était recopié dans sept fichiers, dont deux avaient déjà divergé ; il
+n'existe plus qu'à un endroit. Contact garde son traitement propre (Instrument
+Serif, plus grand) : c'est la section de clôture, elle a le droit.
+
+### Icônes plutôt qu'emoji
+
+Les cartes de « Ce qu'on fait » portaient cinq emoji. C'était le seul élément
+générique du site, et le seul dont le dessin changeait d'un appareil à l'autre —
+au milieu d'un design system qui impose une police par rôle et des angles nets.
+Elles viennent maintenant de `lucide-react`, déjà installé : au trait, en
+`strokeWidth` 1,5 pour tenir la ligne fine du site, et en `currentColor`, donc
+elles passent au rouge au survol de la carte sans qu'on gère quoi que ce soit.
+
+Dans la foulée, les cinq cartes portent chacune leur ligne de specs : quatre sur
+cinq finissaient sur un blanc. Chaque libellé ajouté est repris d'une copie déjà
+validée ailleurs — « surcoût = 0 » du bloc 2 pour 1, « depuis 2022 » de la bande
+En bref, « partie hebdo » du filigrane Communauté — donc aucune promesse
+nouvelle n'a été avancée.
 
 ## Mobile & responsive
 
@@ -296,7 +382,7 @@ pour exactement la même hauteur : 7 × 41 px + 6 × 8 px de gouttière contre
 
 C'est l'orientation la plus vite oubliée, et celle où la hauteur utile fond de
 moitié. Un 844×390 (iPhone 14 couché) reste en mode burger — la nav ne passe en
-liens qu'à 1024 px — donc un panneau de 642 px doit tenir dans 390 px d'écran.
+liens qu'à 1280 px — donc un panneau de 678 px doit tenir dans 390 px d'écran.
 C'est exactement le cas que le défilement du panneau rend viable, et
 `check:responsive` le vérifie au même titre que les autres : aucun
 chevauchement, aucune troncature, CTA atteignable. Le programme y retrouve son
@@ -322,8 +408,13 @@ au-dessus de la bande craie. C'est le comportement voulu et le plus sûr ;
 1. **Pousser le dépôt** sur GitHub / GitLab.
 2. Sur [vercel.com](https://vercel.com) → *Add New Project* → importer le dépôt.
    Le framework est détecté automatiquement ; aucune commande à personnaliser.
-3. **Définir la variable d'environnement** (Project Settings → Environment
-   Variables), pour les trois environnements :
+3. **Ne rien définir tant qu'il n'y a pas de domaine personnalisé.** Sans
+   `NEXT_PUBLIC_SITE_URL`, `lib/site.ts` lit `VERCEL_PROJECT_PRODUCTION_URL`,
+   que Vercel injecte au build avec le domaine de production réel — c'est le
+   réglage le plus sûr, il ne peut pas se désynchroniser.
+
+   Le jour où un domaine définitif existe (Project Settings → Environment
+   Variables, pour les trois environnements) :
 
    | Variable | Valeur |
    |---|---|
@@ -407,15 +498,23 @@ qui passent par la clause d'espacement de 2.5.8 plutôt que par la taille.
 
 ## Points ouverts
 
-- **Handles réseaux** — Facebook, Instagram et Medium pointent sur `#`. À
-  remplacer dans `lib/content.ts` (`SOCIALS`).
-- **Domaine définitif** — voir `NEXT_PUBLIC_SITE_URL` ci-dessus.
+- **Handles réseaux** — Instagram est branché sur le vrai compte. **Facebook et
+  Medium pointent encore sur `#`** : à remplacer dans `lib/content.ts`
+  (`SOCIALS`). `check:faq` compte les placeholders restants (4) pour qu'on ne
+  les oublie pas, et vérifie qu'aucune URL de réseau ne traîne de paramètre de
+  suivi.
+- **Domaine définitif** — la production tourne aujourd'hui sur
+  `cc-five-sigma.vercel.app`, résolu automatiquement par
+  `VERCEL_PROJECT_PRODUCTION_URL`. `NEXT_PUBLIC_SITE_URL` ne doit être définie
+  que pour un vrai domaine personnalisé : le gabarit a longtemps documenté
+  `comlan-community.vercel.app`, qui répond 404. Voir `.env.example`.
 - **Images produit** — le site n'en utilise aucune pour l'instant ; prévoir
   `next/image` si des visuels de PC sont ajoutés.
-- **Nav à 1024 px** — la nav porte désormais six liens. La gouttière a été
-  resserrée entre 1024 et 1280 px et le suffixe `[ C//C — BÉNIN ]` n'apparaît
-  qu'à partir de 1280 px pour faire de la place. À contrôler à l'œil : ça n'a
-  pas pu être mesuré (voir ci-dessous).
+- **Date de la 4ᵉ édition** — décembre 2026, jour non arrêté. Voir « Une
+  édition dont la date n'est pas arrêtée » : trois champs à remplir dans
+  `EVENEMENTS.items` et tout se rallume.
+- **Affiche de décembre** — absente pour l'instant. Le champ est optionnel, la
+  fiche prend toute la largeur sans elle.
 - **Vrai téléphone** — voir « Ce qui reste hors de portée » : le panneau de nav
   sur écran court, la bande à 320 px et le programme de la section Événements
   sont les trois points à confirmer à la main.
@@ -437,8 +536,15 @@ qui passent par la clause d'espacement de 2.5.8 plutôt que par la taille.
 - [x] Phase 10 — passe mobile-first : 320 / 360 / 390 / 414 / paysage / desktop,
       sonde de chevauchement et de troncature au `Range`, cibles tactiles
       réellement mesurées
+- [x] Phase 11 — section Boutiques (deux vitrines, bande d'onglets, captures
+      automatisées), section Événements à deux blocs avec historique et orbite
+      d'affiches, édition sans date ferme, nav à 1280 px
+- [x] Phase 12 — passe visuelle : emoji remplacés par des icônes au trait,
+      specs sur les cinq cartes, hiérarchie des titres de section
+- [x] Phase 13 — anneau d'images en en-tête des Événements, photos du coin
+      photo intégrées en galerie, Instagram branché
 
-Suite complète : **290/290 vérifications** sur les 11 scripts du harnais.
+Suite complète : **338/338 vérifications** sur les 12 scripts du harnais.
 
 | Script | Vérifications |
 |---|---|
@@ -446,11 +552,12 @@ Suite complète : **290/290 vérifications** sur les 11 scripts du harnais.
 | `check:hero` | 23 |
 | `check:content` | 22 |
 | `check:community` | 23 |
-| `check:evenements` | 37 |
-| `check:faq` | 29 |
+| `check:evenements` | 42 |
+| `check:boutiques` | 37 |
+| `check:faq` | 30 |
 | `check:motion` | 21 |
 | `check:audit` | 28 |
-| `check:breakpoints` | 20 |
+| `check:breakpoints` | 25 |
 | `check:touch` | 6 |
 | `check:responsive` | 55 |
 

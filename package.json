@@ -14,13 +14,16 @@
     "shots": "bash tools/visual/run.sh checks/shots.mjs",
     "check:community": "bash tools/visual/run.sh checks/community.mjs",
     "check:evenements": "bash tools/visual/run.sh checks/evenements.mjs",
+    "check:boutiques": "bash tools/visual/run.sh checks/boutiques.mjs",
     "check:faq": "bash tools/visual/run.sh checks/faq-contact.mjs",
     "check:motion": "bash tools/visual/run.sh checks/motion.mjs",
     "check:touch": "POINTER=coarse bash tools/visual/run.sh checks/touch.mjs",
     "check:audit": "bash tools/visual/run.sh checks/audit.mjs",
     "check:breakpoints": "bash tools/visual/run.sh checks/breakpoints.mjs",
     "check:responsive": "bash tools/visual/run.sh checks/responsive.mjs",
-    "check:responsive:touch": "POINTER=coarse bash tools/visual/run.sh checks/responsive.mjs"
+    "check:responsive:touch": "POINTER=coarse bash tools/visual/run.sh checks/responsive.mjs",
+    "shots:sections": "bash tools/visual/run.sh checks/shots-nouveau.mjs",
+    "shots:boutiques": "node tools/visual/shoot-boutiques.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

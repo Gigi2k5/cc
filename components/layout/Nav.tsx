@@ -115,9 +115,13 @@ export function Nav({
             <Wordmark withTag />
           </a>
 
-          {/* Gouttière resserrée entre 1024 et 1280 : six liens + le CTA y tiennent
-                juste. Au-delà, on retrouve le rythme de la maquette. */}
-          <ul className="hidden items-center gap-6 lg:flex xl:gap-9">
+          {/* Sept liens, pas six — « Boutiques » s'est ajouté. La nav en ligne
+              ne s'affiche donc plus qu'à partir de 1280 px : entre 1024 et
+              1280, les sept libellés plus le CTA ne tenaient qu'en resserrant
+              la gouttière à un point où la nav devenait un bloc compact
+              illisible. Le panneau burger, lui, tient sept liens sans effort —
+              il prend le relais sur toute cette plage. */}
+          <ul className="hidden items-center gap-7 xl:flex">
             {NAV_LINKS.map((link) => {
               const isActive = active === link.id;
               return (
@@ -155,10 +159,10 @@ export function Nav({
                 battrait pas le `inline-flex` de sa classe de base — entre deux
                 utilitaires `display`, c'est l'ordre dans la feuille générée
                 qui tranche, pas l'ordre dans className. */}
-            <div className="hidden lg:block">
+            <div className="hidden xl:block">
               <Magnetic>
-                {/* Six liens serrent la nav : sans ça le libellé passe sur deux
-                    lignes et le bouton double de hauteur. */}
+                {/* Sept liens serrent la nav : sans ça le libellé passe sur
+                    deux lignes et le bouton double de hauteur. */}
                 <Button href={WHATSAPP.primary.href} className="whitespace-nowrap">
                   {CTA.whatsapp}
                 </Button>
@@ -172,7 +176,7 @@ export function Nav({
               aria-expanded={open}
               aria-controls={PANEL_ID}
               aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-              className="-mr-2 grid size-11 shrink-0 place-items-center text-craie transition-colors duration-[var(--duration-micro)] ease-micro hover:text-rouge lg:hidden"
+              className="-mr-2 grid size-11 shrink-0 place-items-center text-craie transition-colors duration-[var(--duration-micro)] ease-micro hover:text-rouge xl:hidden"
             >
               {open ? (
                 <X aria-hidden="true" strokeWidth={1.75} className="size-6" />
@@ -193,9 +197,9 @@ export function Nav({
         aria-label="Menu"
         aria-hidden={!open}
         className={cn(
-          "fixed inset-0 z-40 flex flex-col bg-encre lg:hidden",
-          /* `overflow-y-auto` : six liens en 36 px, un CTA et la signature
-             font 642 px de haut au minimum. Sur un 360×640 — une taille
+          "fixed inset-0 z-40 flex flex-col bg-encre xl:hidden",
+          /* `overflow-y-auto` : sept liens en 36 px, un CTA et la signature
+             dépassent les 678 px. Sur un 360×640 — une taille
              d'Android parmi les plus courantes — ça dépasse, et comme le
              scroll du body est verrouillé à l'ouverture, le bouton WhatsApp
              était purement INATTEIGNABLE (mesuré : bas de panneau à 753 px

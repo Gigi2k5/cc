@@ -1,6 +1,7 @@
 import { Section } from "@/components/layout/Section";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Reveal } from "@/components/ui/Reveal";
+import { SectionTitle } from "@/components/ui/SectionTitle";
 import { A_PROPOS } from "@/lib/content";
 
 /** Grille 2 colonnes : titre d'impact à gauche, propos et signature à droite. */
@@ -13,12 +14,9 @@ export function APropos() {
     >
       <Reveal>
         <Eyebrow>{A_PROPOS.eyebrow}</Eyebrow>
-        <h2
-          id="a-propos-title"
-          className="mt-6 font-impact text-[clamp(2.2rem,5vw,3.25rem)] leading-[1.1]"
-        >
+        <SectionTitle id="a-propos-title" className="mt-6">
           {A_PROPOS.title}
-        </h2>
+        </SectionTitle>
       </Reveal>
 
       <div>
